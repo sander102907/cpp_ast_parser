@@ -1,0 +1,3944 @@
+{
+  "label": "root",
+  "is_reserved": true,
+  "children": [
+    {
+      "label": "VAR_DECL",
+      "is_reserved": true,
+      "children": [
+        {
+          "label": "TYPE",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "int",
+              "is_reserved": false
+            }
+          ]
+        },
+        {
+          "label": "DECLARATOR",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "REF",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "n",
+                  "is_reserved": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "VAR_DECL",
+      "is_reserved": true,
+      "children": [
+        {
+          "label": "TYPE",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "char [40]",
+              "is_reserved": false
+            }
+          ]
+        },
+        {
+          "label": "DECLARATOR",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "REF",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "c",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "INTEGER_LITERAL",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "40",
+                  "is_reserved": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "VAR_DECL",
+      "is_reserved": true,
+      "children": [
+        {
+          "label": "TYPE",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "int",
+              "is_reserved": false
+            }
+          ]
+        },
+        {
+          "label": "DECLARATOR",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "REF",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "cnt",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "INTEGER_LITERAL",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "1",
+                  "is_reserved": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "VAR_DECL",
+      "is_reserved": true,
+      "children": [
+        {
+          "label": "TYPE",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "int [6400010][2]",
+              "is_reserved": false
+            }
+          ]
+        },
+        {
+          "label": "DECLARATOR",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "REF",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "ch",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "INTEGER_LITERAL",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "2",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "INTEGER_LITERAL",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "6400010",
+                  "is_reserved": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "VAR_DECL",
+      "is_reserved": true,
+      "children": [
+        {
+          "label": "TYPE",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "int [6400010]",
+              "is_reserved": false
+            }
+          ]
+        },
+        {
+          "label": "DECLARATOR",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "REF",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "col",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "INTEGER_LITERAL",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "6400010",
+                  "is_reserved": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "VAR_DECL",
+      "is_reserved": true,
+      "children": [
+        {
+          "label": "TYPE",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "int [6400010]",
+              "is_reserved": false
+            }
+          ]
+        },
+        {
+          "label": "DECLARATOR",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "REF",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "siz",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "INTEGER_LITERAL",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "6400010",
+                  "is_reserved": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "VAR_DECL",
+      "is_reserved": true,
+      "children": [
+        {
+          "label": "TYPE",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "int [6400010]",
+              "is_reserved": false
+            }
+          ]
+        },
+        {
+          "label": "DECLARATOR",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "REF",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "ct",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "INTEGER_LITERAL",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "6400010",
+                  "is_reserved": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "VAR_DECL",
+      "is_reserved": true,
+      "children": [
+        {
+          "label": "TYPE",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "int [6400010]",
+              "is_reserved": false
+            }
+          ]
+        },
+        {
+          "label": "DECLARATOR",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "REF",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "tag",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "INTEGER_LITERAL",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "6400010",
+                  "is_reserved": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "FUNCTION_DECL",
+      "is_reserved": true,
+      "children": [
+        {
+          "label": "insert",
+          "is_reserved": false
+        },
+        {
+          "label": "RETURN_TYPE",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "void",
+              "is_reserved": false
+            }
+          ]
+        },
+        {
+          "label": "PARM_DECL",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "TYPE",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "long long",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "DECLARATOR",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "REF",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "x",
+                      "is_reserved": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "PARM_DECL",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "TYPE",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "bool",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "DECLARATOR",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "REF",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "ty",
+                      "is_reserved": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "PARM_DECL",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "TYPE",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "long long",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "DECLARATOR",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "REF",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "a",
+                      "is_reserved": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "PARM_DECL",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "TYPE",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "int",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "DECLARATOR",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "REF",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "md",
+                      "is_reserved": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "PARM_DECL",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "TYPE",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "int",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "DECLARATOR",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "REF",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "d",
+                      "is_reserved": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "COMPOUND_STMT",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "IF_STMT",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "UNARY_OPERATOR_",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "ty",
+                          "is_reserved": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "BINARY_OPERATOR_=",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "ARRAY_SUBSCRIPT_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "ct",
+                              "is_reserved": false
+                            }
+                          ]
+                        },
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "x",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "INTEGER_LITERAL",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "1",
+                          "is_reserved": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "UNARY_OPERATOR_++",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "ARRAY_SUBSCRIPT_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "siz",
+                              "is_reserved": false
+                            }
+                          ]
+                        },
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "x",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "IF_STMT",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "BINARY_OPERATOR_==",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "d",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "md",
+                          "is_reserved": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "COMPOUND_STMT",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "COMPOUND_ASSIGNMENT_OPERATOR_OPERATOR_ASSIGN_OR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "ARRAY_SUBSCRIPT_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "tag",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "x",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "UNARY_OPERATOR_",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "ty",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "RETURN_STMT",
+                      "is_reserved": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "VAR_DECL",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "TYPE",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "int",
+                      "is_reserved": false
+                    }
+                  ]
+                },
+                {
+                  "label": "DECLARATOR",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "REF",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "p",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "BINARY_OPERATOR_&",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "PAREN_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "BINARY_OPERATOR_-",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "DECL_REF_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "a",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "PAREN_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "BINARY_OPERATOR_-",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "DECL_REF_EXPR",
+                                          "is_reserved": true,
+                                          "children": [
+                                            {
+                                              "label": "d",
+                                              "is_reserved": false
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "label": "INTEGER_LITERAL",
+                                          "is_reserved": true,
+                                          "children": [
+                                            {
+                                              "label": "1",
+                                              "is_reserved": false
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "INTEGER_LITERAL",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "1",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "IF_STMT",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "UNARY_OPERATOR_+_+",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "ARRAY_SUBSCRIPT_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "ARRAY_SUBSCRIPT_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "ch",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "x",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "p",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "BINARY_OPERATOR_=",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "ARRAY_SUBSCRIPT_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "ARRAY_SUBSCRIPT_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "ch",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "x",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "p",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "UNARY_OPERATOR_++",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "cnt",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "CALL_EXPR",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "insert",
+                  "is_reserved": false,
+                  "children": [
+                    {
+                      "label": "ARRAY_SUBSCRIPT_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "ARRAY_SUBSCRIPT_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "ch",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "x",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "p",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "ty",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "a",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "md",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "BINARY_OPERATOR_-",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "d",
+                              "is_reserved": false
+                            }
+                          ]
+                        },
+                        {
+                          "label": "INTEGER_LITERAL",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "1",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "VAR_DECL",
+      "is_reserved": true,
+      "children": [
+        {
+          "label": "TYPE",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "int",
+              "is_reserved": false
+            }
+          ]
+        },
+        {
+          "label": "DECLARATOR",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "REF",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "anss",
+                  "is_reserved": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "VAR_DECL",
+      "is_reserved": true,
+      "children": [
+        {
+          "label": "TYPE",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "int",
+              "is_reserved": false
+            }
+          ]
+        },
+        {
+          "label": "DECLARATOR",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "REF",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "gt",
+                  "is_reserved": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "VAR_DECL",
+      "is_reserved": true,
+      "children": [
+        {
+          "label": "TYPE",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "long long [200010]",
+              "is_reserved": false
+            }
+          ]
+        },
+        {
+          "label": "DECLARATOR",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "REF",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "ans",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "INTEGER_LITERAL",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "200010",
+                  "is_reserved": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "VAR_DECL",
+      "is_reserved": true,
+      "children": [
+        {
+          "label": "TYPE",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "long long [200010]",
+              "is_reserved": false
+            }
+          ]
+        },
+        {
+          "label": "DECLARATOR",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "REF",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "md",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "INTEGER_LITERAL",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "200010",
+                  "is_reserved": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "FUNCTION_DECL",
+      "is_reserved": true,
+      "children": [
+        {
+          "label": "dfs",
+          "is_reserved": false
+        },
+        {
+          "label": "RETURN_TYPE",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "void",
+              "is_reserved": false
+            }
+          ]
+        },
+        {
+          "label": "PARM_DECL",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "TYPE",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "int",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "DECLARATOR",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "REF",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "x",
+                      "is_reserved": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "PARM_DECL",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "TYPE",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "long long",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "DECLARATOR",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "REF",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "a",
+                      "is_reserved": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "PARM_DECL",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "TYPE",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "int",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "DECLARATOR",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "REF",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "d",
+                      "is_reserved": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "PARM_DECL",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "TYPE",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "bool",
+                  "is_reserved": false
+                }
+              ]
+            },
+            {
+              "label": "DECLARATOR",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "REF",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "cy",
+                      "is_reserved": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "COMPOUND_STMT",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "IF_STMT",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "BINARY_OPERATOR_-",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "d",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "UNARY_OPERATOR_-",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "INTEGER_LITERAL",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "1",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "RETURN_STMT",
+                  "is_reserved": true
+                }
+              ]
+            },
+            {
+              "label": "COMPOUND_ASSIGNMENT_OPERATOR_OPERATOR_ASSIGN_OR",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "DECL_REF_EXPR",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "cy",
+                      "is_reserved": false
+                    }
+                  ]
+                },
+                {
+                  "label": "ARRAY_SUBSCRIPT_EXPR",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "tag",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "x",
+                          "is_reserved": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "IF_STMT",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "BINARY_OPERATOR_&&",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "BINARY_OPERATOR_&&",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "ARRAY_SUBSCRIPT_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "siz",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "x",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "UNARY_OPERATOR_",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "ARRAY_SUBSCRIPT_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "DECL_REF_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "ct",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "DECL_REF_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "x",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "UNARY_OPERATOR_",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "cy",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "COMPOUND_STMT",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "BINARY_OPERATOR_=",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "BINARY_OPERATOR_=",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "ARRAY_SUBSCRIPT_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "DECL_REF_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "ans",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "UNARY_OPERATOR_++",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "DECL_REF_EXPR",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "anss",
+                                          "is_reserved": false
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "a",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "BINARY_OPERATOR_=",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "ARRAY_SUBSCRIPT_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "DECL_REF_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "md",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "DECL_REF_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "anss",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "label": "BINARY_OPERATOR_-",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "INTEGER_LITERAL",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "32",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "DECL_REF_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "d",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "COMPOUND_ASSIGNMENT_OPERATOR_+=",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "gt",
+                              "is_reserved": false
+                            }
+                          ]
+                        },
+                        {
+                          "label": "ARRAY_SUBSCRIPT_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "siz",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "x",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "RETURN_STMT",
+                      "is_reserved": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "IF_STMT",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "ARRAY_SUBSCRIPT_EXPR",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "ARRAY_SUBSCRIPT_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "ch",
+                              "is_reserved": false
+                            }
+                          ]
+                        },
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "x",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "INTEGER_LITERAL",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "0",
+                          "is_reserved": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "CALL_EXPR",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "dfs",
+                      "is_reserved": false,
+                      "children": [
+                        {
+                          "label": "ARRAY_SUBSCRIPT_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "ARRAY_SUBSCRIPT_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "DECL_REF_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "ch",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "DECL_REF_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "x",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "label": "INTEGER_LITERAL",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "0",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "a",
+                              "is_reserved": false
+                            }
+                          ]
+                        },
+                        {
+                          "label": "BINARY_OPERATOR_-",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "d",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "INTEGER_LITERAL",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "1",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "cy",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "IF_STMT",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "ARRAY_SUBSCRIPT_EXPR",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "ARRAY_SUBSCRIPT_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "ch",
+                              "is_reserved": false
+                            }
+                          ]
+                        },
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "x",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "INTEGER_LITERAL",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "1",
+                          "is_reserved": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "CALL_EXPR",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "dfs",
+                      "is_reserved": false,
+                      "children": [
+                        {
+                          "label": "ARRAY_SUBSCRIPT_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "ARRAY_SUBSCRIPT_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "DECL_REF_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "ch",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "DECL_REF_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "x",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "label": "INTEGER_LITERAL",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "1",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "BINARY_OPERATOR_-",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "a",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "PAREN_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "BINARY_OPERATOR_-",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "INTEGER_LITERAL",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "1ll",
+                                          "is_reserved": false
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "label": "PAREN_EXPR",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "BINARY_OPERATOR_-",
+                                          "is_reserved": true,
+                                          "children": [
+                                            {
+                                              "label": "DECL_REF_EXPR",
+                                              "is_reserved": true,
+                                              "children": [
+                                                {
+                                                  "label": "d",
+                                                  "is_reserved": false
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "label": "INTEGER_LITERAL",
+                                              "is_reserved": true,
+                                              "children": [
+                                                {
+                                                  "label": "1",
+                                                  "is_reserved": false
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "BINARY_OPERATOR_-",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "d",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "INTEGER_LITERAL",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "1",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "cy",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "FUNCTION_DECL",
+      "is_reserved": true,
+      "children": [
+        {
+          "label": "main",
+          "is_reserved": false
+        },
+        {
+          "label": "RETURN_TYPE",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "int",
+              "is_reserved": false
+            }
+          ]
+        },
+        {
+          "label": "COMPOUND_STMT",
+          "is_reserved": true,
+          "children": [
+            {
+              "label": "CALL_EXPR",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "scanf",
+                  "is_reserved": false,
+                  "children": [
+                    {
+                      "label": "STRING_LITERAL",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "\"%d\"",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "UNARY_OPERATOR_&",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "n",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "VAR_DECL",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "TYPE",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "int",
+                      "is_reserved": false
+                    }
+                  ]
+                },
+                {
+                  "label": "DECLARATOR",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "REF",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "ss",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "INTEGER_LITERAL",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "0",
+                          "is_reserved": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "FOR_STMT",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "VAR_DECL",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "TYPE",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "int",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "DECLARATOR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "REF",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "i",
+                              "is_reserved": false
+                            }
+                          ]
+                        },
+                        {
+                          "label": "INTEGER_LITERAL",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "1",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "BINARY_OPERATOR_<=",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "i",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "n",
+                          "is_reserved": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "UNARY_OPERATOR_++",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "i",
+                          "is_reserved": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "COMPOUND_STMT",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "CALL_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "scanf",
+                          "is_reserved": false,
+                          "children": [
+                            {
+                              "label": "STRING_LITERAL",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "\"%s\"",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "c",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "VAR_DECL",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "TYPE",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "long long",
+                              "is_reserved": false
+                            }
+                          ]
+                        },
+                        {
+                          "label": "DECLARATOR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "REF",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "x",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "INTEGER_LITERAL",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "0",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "VAR_DECL",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "TYPE",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "int",
+                              "is_reserved": false
+                            }
+                          ]
+                        },
+                        {
+                          "label": "DECLARATOR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "REF",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "p",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "INTEGER_LITERAL",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "24",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "VAR_DECL",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "TYPE",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "int",
+                              "is_reserved": false
+                            }
+                          ]
+                        },
+                        {
+                          "label": "DECLARATOR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "REF",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "len",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "CALL_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "strlen",
+                                  "is_reserved": false,
+                                  "children": [
+                                    {
+                                      "label": "DECL_REF_EXPR",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "c",
+                                          "is_reserved": false
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "VAR_DECL",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "TYPE",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "int",
+                              "is_reserved": false
+                            }
+                          ]
+                        },
+                        {
+                          "label": "DECLARATOR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "REF",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "mp",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "INTEGER_LITERAL",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "32",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "BINARY_OPERATOR_=",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "ARRAY_SUBSCRIPT_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "c",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "len",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "CHARACTER_LITERAL",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "VAR_DECL",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "TYPE",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "long long",
+                              "is_reserved": false
+                            }
+                          ]
+                        },
+                        {
+                          "label": "DECLARATOR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "REF",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "now",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "INTEGER_LITERAL",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "0",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "FOR_STMT",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "VAR_DECL",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "TYPE",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "int",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "DECLARATOR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "REF",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "j",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "INTEGER_LITERAL",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "1",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "BINARY_OPERATOR_<=",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "j",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "len",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "UNARY_OPERATOR_++",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "j",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "IF_STMT",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "BINARY_OPERATOR_>",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "BINARY_OPERATOR_<",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "ARRAY_SUBSCRIPT_EXPR",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "DECL_REF_EXPR",
+                                          "is_reserved": true,
+                                          "children": [
+                                            {
+                                              "label": "c",
+                                              "is_reserved": false
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "label": "DECL_REF_EXPR",
+                                          "is_reserved": true,
+                                          "children": [
+                                            {
+                                              "label": "j",
+                                              "is_reserved": false
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "label": "CHARACTER_LITERAL",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "",
+                                          "is_reserved": false
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "BINARY_OPERATOR_>",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "ARRAY_SUBSCRIPT_EXPR",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "DECL_REF_EXPR",
+                                          "is_reserved": true,
+                                          "children": [
+                                            {
+                                              "label": "c",
+                                              "is_reserved": false
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "label": "DECL_REF_EXPR",
+                                          "is_reserved": true,
+                                          "children": [
+                                            {
+                                              "label": "j",
+                                              "is_reserved": false
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "label": "CHARACTER_LITERAL",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "",
+                                          "is_reserved": false
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "label": "COMPOUND_STMT",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "IF_STMT",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "BINARY_OPERATOR_>=",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "DECL_REF_EXPR",
+                                          "is_reserved": true,
+                                          "children": [
+                                            {
+                                              "label": "p",
+                                              "is_reserved": false
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "label": "INTEGER_LITERAL",
+                                          "is_reserved": true,
+                                          "children": [
+                                            {
+                                              "label": "0",
+                                              "is_reserved": false
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "label": "BINARY_OPERATOR_=",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "BINARY_OPERATOR_-=",
+                                          "is_reserved": true,
+                                          "children": [
+                                            {
+                                              "label": "COMPOUND_ASSIGNMENT_OPERATOR_OPERATOR_ASSIGN_OR",
+                                              "is_reserved": true,
+                                              "children": [
+                                                {
+                                                  "label": "DECL_REF_EXPR",
+                                                  "is_reserved": true,
+                                                  "children": [
+                                                    {
+                                                      "label": "x",
+                                                      "is_reserved": false
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "label": "PAREN_EXPR",
+                                                  "is_reserved": true,
+                                                  "children": [
+                                                    {
+                                                      "label": "BINARY_OPERATOR_",
+                                                      "is_reserved": true,
+                                                      "children": [
+                                                        {
+                                                          "label": "DECL_REF_EXPR",
+                                                          "is_reserved": true,
+                                                          "children": [
+                                                            {
+                                                              "label": "now",
+                                                              "is_reserved": false
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "label": "DECL_REF_EXPR",
+                                                          "is_reserved": true,
+                                                          "children": [
+                                                            {
+                                                              "label": "p",
+                                                              "is_reserved": false
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "label": "COMPOUND_ASSIGNMENT_OPERATOR_-=",
+                                              "is_reserved": true,
+                                              "children": [
+                                                {
+                                                  "label": "DECL_REF_EXPR",
+                                                  "is_reserved": true,
+                                                  "children": [
+                                                    {
+                                                      "label": "p",
+                                                      "is_reserved": false
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "label": "INTEGER_LITERAL",
+                                                  "is_reserved": true,
+                                                  "children": [
+                                                    {
+                                                      "label": "8",
+                                                      "is_reserved": false
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "label": "BINARY_OPERATOR_=",
+                                          "is_reserved": true,
+                                          "children": [
+                                            {
+                                              "label": "DECL_REF_EXPR",
+                                              "is_reserved": true,
+                                              "children": [
+                                                {
+                                                  "label": "now",
+                                                  "is_reserved": false
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "label": "INTEGER_LITERAL",
+                                              "is_reserved": true,
+                                              "children": [
+                                                {
+                                                  "label": "0",
+                                                  "is_reserved": false
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "label": "BINARY_OPERATOR_=",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "DECL_REF_EXPR",
+                                          "is_reserved": true,
+                                          "children": [
+                                            {
+                                              "label": "mp",
+                                              "is_reserved": false
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "label": "DECL_REF_EXPR",
+                                          "is_reserved": true,
+                                          "children": [
+                                            {
+                                              "label": "now",
+                                              "is_reserved": false
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "label": "BINARY_OPERATOR_=",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "DECL_REF_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "now",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "BINARY_OPERATOR_-",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "BINARY_OPERATOR_+",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "BINARY_OPERATOR_*",
+                                          "is_reserved": true,
+                                          "children": [
+                                            {
+                                              "label": "DECL_REF_EXPR",
+                                              "is_reserved": true,
+                                              "children": [
+                                                {
+                                                  "label": "now",
+                                                  "is_reserved": false
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "label": "INTEGER_LITERAL",
+                                              "is_reserved": true,
+                                              "children": [
+                                                {
+                                                  "label": "10",
+                                                  "is_reserved": false
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "label": "ARRAY_SUBSCRIPT_EXPR",
+                                          "is_reserved": true,
+                                          "children": [
+                                            {
+                                              "label": "DECL_REF_EXPR",
+                                              "is_reserved": true,
+                                              "children": [
+                                                {
+                                                  "label": "c",
+                                                  "is_reserved": false
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "label": "DECL_REF_EXPR",
+                                              "is_reserved": true,
+                                              "children": [
+                                                {
+                                                  "label": "j",
+                                                  "is_reserved": false
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "label": "CHARACTER_LITERAL",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "",
+                                          "is_reserved": false
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "BINARY_OPERATOR_=",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "mp",
+                              "is_reserved": false
+                            }
+                          ]
+                        },
+                        {
+                          "label": "BINARY_OPERATOR_-",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "INTEGER_LITERAL",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "32",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "mp",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "CALL_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "insert",
+                          "is_reserved": false,
+                          "children": [
+                            {
+                              "label": "INTEGER_LITERAL",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "1",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "BINARY_OPERATOR_==",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "ARRAY_SUBSCRIPT_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "DECL_REF_EXPR",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "c",
+                                          "is_reserved": false
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "label": "INTEGER_LITERAL",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "0",
+                                          "is_reserved": false
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "CHARACTER_LITERAL",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "x",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "mp",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "INTEGER_LITERAL",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "32",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "COMPOUND_ASSIGNMENT_OPERATOR_+=",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "DECL_REF_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "ss",
+                              "is_reserved": false
+                            }
+                          ]
+                        },
+                        {
+                          "label": "PAREN_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "BINARY_OPERATOR_==",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "ARRAY_SUBSCRIPT_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "DECL_REF_EXPR",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "c",
+                                          "is_reserved": false
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "label": "INTEGER_LITERAL",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "0",
+                                          "is_reserved": false
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "CHARACTER_LITERAL",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "CALL_EXPR",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "dfs",
+                  "is_reserved": false,
+                  "children": [
+                    {
+                      "label": "INTEGER_LITERAL",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "1",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "INTEGER_LITERAL",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "0",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "INTEGER_LITERAL",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "32",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "INTEGER_LITERAL",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "0",
+                          "is_reserved": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "IF_STMT",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "BINARY_OPERATOR_!=",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "gt",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "ss",
+                          "is_reserved": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "RETURN_STMT",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "BINARY_OPERATOR_OPERATOR_COMMA",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "CALL_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "printf",
+                              "is_reserved": false,
+                              "children": [
+                                {
+                                  "label": "STRING_LITERAL",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "\"-1\"",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "INTEGER_LITERAL",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "0",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "CALL_EXPR",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "printf",
+                  "is_reserved": false,
+                  "children": [
+                    {
+                      "label": "STRING_LITERAL",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "\"%d\\n\"",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "anss",
+                          "is_reserved": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "FOR_STMT",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "VAR_DECL",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "TYPE",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "int",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "DECLARATOR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "REF",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "i",
+                              "is_reserved": false
+                            }
+                          ]
+                        },
+                        {
+                          "label": "INTEGER_LITERAL",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "1",
+                              "is_reserved": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "BINARY_OPERATOR_<=",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "i",
+                          "is_reserved": false
+                        }
+                      ]
+                    },
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "anss",
+                          "is_reserved": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "UNARY_OPERATOR_++",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "DECL_REF_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "i",
+                          "is_reserved": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "COMPOUND_STMT",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "CALL_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "printf",
+                          "is_reserved": false,
+                          "children": [
+                            {
+                              "label": "STRING_LITERAL",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "\"%d.\"",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "BINARY_OPERATOR_",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "ARRAY_SUBSCRIPT_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "DECL_REF_EXPR",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "ans",
+                                          "is_reserved": false
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "label": "DECL_REF_EXPR",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "i",
+                                          "is_reserved": false
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "INTEGER_LITERAL",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "24",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "COMPOUND_ASSIGNMENT_OPERATOR_%=",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "ARRAY_SUBSCRIPT_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "ans",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "i",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "PAREN_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "BINARY_OPERATOR_",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "INTEGER_LITERAL",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "1",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "INTEGER_LITERAL",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "24",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "CALL_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "printf",
+                          "is_reserved": false,
+                          "children": [
+                            {
+                              "label": "STRING_LITERAL",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "\"%d.\"",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "BINARY_OPERATOR_",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "ARRAY_SUBSCRIPT_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "DECL_REF_EXPR",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "ans",
+                                          "is_reserved": false
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "label": "DECL_REF_EXPR",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "i",
+                                          "is_reserved": false
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "INTEGER_LITERAL",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "16",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "COMPOUND_ASSIGNMENT_OPERATOR_%=",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "ARRAY_SUBSCRIPT_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "ans",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "i",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "PAREN_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "BINARY_OPERATOR_",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "INTEGER_LITERAL",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "1",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "INTEGER_LITERAL",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "16",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "CALL_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "printf",
+                          "is_reserved": false,
+                          "children": [
+                            {
+                              "label": "STRING_LITERAL",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "\"%d.\"",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "BINARY_OPERATOR_",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "ARRAY_SUBSCRIPT_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "DECL_REF_EXPR",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "ans",
+                                          "is_reserved": false
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "label": "DECL_REF_EXPR",
+                                      "is_reserved": true,
+                                      "children": [
+                                        {
+                                          "label": "i",
+                                          "is_reserved": false
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "INTEGER_LITERAL",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "8",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "COMPOUND_ASSIGNMENT_OPERATOR_%=",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "ARRAY_SUBSCRIPT_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "ans",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "DECL_REF_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "i",
+                                  "is_reserved": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "PAREN_EXPR",
+                          "is_reserved": true,
+                          "children": [
+                            {
+                              "label": "BINARY_OPERATOR_",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "INTEGER_LITERAL",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "1",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "INTEGER_LITERAL",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "8",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "CALL_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "printf",
+                          "is_reserved": false,
+                          "children": [
+                            {
+                              "label": "STRING_LITERAL",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "\"%d/\"",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "ARRAY_SUBSCRIPT_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "DECL_REF_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "ans",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "DECL_REF_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "i",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "CALL_EXPR",
+                      "is_reserved": true,
+                      "children": [
+                        {
+                          "label": "printf",
+                          "is_reserved": false,
+                          "children": [
+                            {
+                              "label": "STRING_LITERAL",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "\"%d\\n\"",
+                                  "is_reserved": false
+                                }
+                              ]
+                            },
+                            {
+                              "label": "ARRAY_SUBSCRIPT_EXPR",
+                              "is_reserved": true,
+                              "children": [
+                                {
+                                  "label": "DECL_REF_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "md",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "DECL_REF_EXPR",
+                                  "is_reserved": true,
+                                  "children": [
+                                    {
+                                      "label": "i",
+                                      "is_reserved": false
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "RETURN_STMT",
+              "is_reserved": true,
+              "children": [
+                {
+                  "label": "INTEGER_LITERAL",
+                  "is_reserved": true,
+                  "children": [
+                    {
+                      "label": "0",
+                      "is_reserved": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
