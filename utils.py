@@ -72,8 +72,8 @@ def is_call_expr(node):
     return is_node_kind_safe(node, [CursorKind.CALL_EXPR])
 
 
-binary_operators = ['+', '-', '*', '/', '%', '&', '|']
-unary_operators = ['++', '--']
+binary_operators = ['+', '-', '*', '/', '%', '&', '|', '>>']
+unary_operators = ['++', '--', '!']
 comparison_operators = ['==', '<=', '>=', '<', '>', '!=', '&&', '||']
 unary_assignment_operators = [op + '=' for op in binary_operators]
 assignment_operators = ['='] + unary_assignment_operators
@@ -192,11 +192,16 @@ def get_operator(ast_node):
         name = []
         for ch in code_str:
             if ch in binary_operators:
-                name.append(fix_cpp_operator_spelling(ch).strip())
+                name.append(ch) #fix_cpp_operator_spelling(ch).strip())
         return name
     else:
         name = name_token.spelling
-        name = fix_cpp_operator_spelling(name)
+        # name = fix_cpp_operator_spelling(name)
+        if name in ['++', '--']:
+            if name == list(ast_node.get_tokens())[0].spelling:
+                name = 'PRE_' + name
+            else:
+                name = 'POST_' + name
         return [name.strip()]
 
 
