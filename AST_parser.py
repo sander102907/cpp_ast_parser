@@ -2,9 +2,15 @@ import clang.cindex
 from clang.cindex import CursorKind
 from anytree import RenderTree
 from tree_node import Node
-from tidy_files import tidy_file
+from tidy_files import add_readability_braces, preprocess_file
 import utils
 from node_handler import *
+import os
+from tqdm import tqdm
+from anytree.exporter import JsonExporter
+import threading
+import multiprocessing
+import queue as queue
 
 class AstParser:
     def __init__(self, clang_lib_file='/usr/lib/x86_64-linux-gnu/libclang-6.0.so.1'):
@@ -17,10 +23,15 @@ class AstParser:
 
 
     def parse_ast(self, input_file_path):
-        tidy_file(input_file_path)
-        tu = self.index.parse(input_file_path)
+        add_readability_braces(input_file_path)
+        preprocess_file(input_file_path)
+        tu = self.index.parse(input_file_path, args=['-x', 'c++'])
         cursor_items = self.get_cursor_items(tu.cursor)
         root_node = Node('root', is_reserved=True)
+
+        # for cursor_item in cursor_items:
+        #     for c in cursor_item.walk_preorder():
+        #         print(f'spelling: {c.spelling}, kind: {c.kind.name}, type spelling: {c.type.spelling}, return type: {c.type.get_result().spelling}, type kind: {c.type.kind}')
 
         for cursor_item in cursor_items:
             self.parse_item(cursor_item, root_node)
@@ -42,13 +53,21 @@ class AstParser:
 
 
     def parse_item(self, ast_item, parent_node):
+        
         # skip meaningless AST primitives
-        if ast_item.kind == CursorKind.DECL_STMT \
-        or ast_item.kind == CursorKind.UNEXPOSED_EXPR \
-        or ast_item.kind == CursorKind.TEMPLATE_REF \
-        or ast_item.kind == CursorKind.NAMESPACE_REF:
-            pass
+        skip_kinds = [
+            CursorKind.UNEXPOSED_EXPR, CursorKind.OVERLOADED_DECL_REF,
+            CursorKind.TEMPLATE_REF, CursorKind.NAMESPACE_REF,
+            ]
 
+        if ast_item.kind in skip_kinds \
+        or (('std::string' == ast_item.type.spelling \
+        or 'basic_string' == ast_item.spelling) \
+        and ast_item.kind in [CursorKind.TYPE_REF, CursorKind.CALL_EXPR]):
+            # if ast_item.kind == CursorKind.DECL_STMT:
+            #     print(ast_item.spelling, ast_item.kind.name)
+            #     print([(c.spelling, c.kind.name) for c in ast_item.get_children()])
+            pass
 
         # Parse typdef
         elif utils.is_typedef(ast_item):
@@ -82,35 +101,106 @@ class AstParser:
         
 
         # parse type ref
-        elif ast_item.kind == CursorKind.TYPE_REF and parent_node.label != 'root':
+        elif ast_item.kind == CursorKind.TYPE_REF and parent_node and parent_node.label != 'root' and parent_node.label != 'DECLARATOR' and parent_node.label != 'FUNCTION_DECL':
             handle_type_ref(ast_item, parent_node)
+
+        elif ast_item.kind == CursorKind.CXX_FOR_RANGE_STMT:
+            parent_node = handle_for_range(ast_item, parent_node)
+
+        # elif ast_item.kind == CursorKind.OVERLOADED_DECL_REF:
+        #     parent_node = Node(ast_item.spelling, is_reserved=True, parent=parent_node)
+        #     print(ast_item.spelling, ast_item.kind.name, ast_item.type.spelling)
 
 
         # if not one of the above -> create simple parent node of the kind of the item
         elif ast_item.kind != CursorKind.TYPE_REF:
+            # if ast_item.kind == CursorKind.PAREN_EXPR:
+            #     print([(c.spelling, c.kind.name) for c in ast_item.get_children()])
+            #     for child in ast_item.get_children():
+            #         print([(c.spelling, c.kind.name) for c in child.get_children()])
             parent_node = Node(ast_item.kind.name, is_reserved=True, parent=parent_node)
 
         # Do not iterate through children that we have already treated as arguments
         arguments = []
         if utils.is_call_expr(ast_item):
             arguments = [c.spelling for c in ast_item.get_arguments()]
-
-        for child in ast_item.get_children():
-            if child.kind != CursorKind.PARM_DECL and child.spelling not in arguments:
+        # Already handled first child of for range statement, so start from second child
+        if ast_item.kind == CursorKind.CXX_FOR_RANGE_STMT:
+            for child in list(ast_item.get_children())[1:]:
                 self.parse_item(child, parent_node)
+        else:
+            for child in ast_item.get_children():
+                if not(child.kind == CursorKind.PARM_DECL or child.spelling in arguments \
+                    or (ast_item.kind == CursorKind.STRUCT_DECL and parent_node.label == 'DECLARATOR')):
+                    self.parse_item(child, parent_node)
+
 
 
 ast_parser = AstParser()
-ast = ast_parser.parse_ast('data/subset/cpp/104606100.cpp')
-
-for pre, fill, node in RenderTree(ast):
-    treestr = u"%s%s" % (pre, node.label)
-    print(treestr)
-
-from anytree.exporter import JsonExporter
-
 exporter = JsonExporter(indent=2)
-with open('ast_parser/tree.json', 'w') as file:
-    file.write(exporter.export(ast))
+
+
+def thread_parser(file_paths, pbar, output_folder):
+    while True:
+        file_path = file_queue.get()
+        try:
+            ast = ast_parser.parse_ast(file_path)
+        except RuntimeError:
+            print(f'Skipping file due to error in the source code: {file_path}')   
+            pbar.update() 
+            file_queue.task_done()
+            continue
+        except Exception as e:
+            print(f'Skipping file due to parsing failing: {file_path} - {e}')
+            pbar.update()
+            file_queue.task_done()
+            continue
+
+        file_name = file_path.split('/')[-1]
+
+        with open(f'{output_folder}{file_name.split(".")[0]}.json', 'w') as file:
+            file.write(exporter.export(ast))
+                
+        pbar.update()
+        file_queue.task_done()
+
+# Work with threads to increase the speed
+max_task = multiprocessing.cpu_count()
+file_paths = ['../data/subset/cpp/106395892.cpp']
+input_folder = '../data/subset/cpp/'
+output_folder = '../data/subset/ast_trees/'
+
+# for dirs,_,files in os.walk(input_folder):
+#     # Create folder to save data if it does not exist yet
+#     os.makedirs(f'{output_folder}{dirs}', exist_ok=True)
+#     for f in files:
+#     	file_paths.append(dirs + f)
+ 
+pbar = tqdm(total=len(file_paths))
+file_queue = queue.Queue(max_task)
+
+try:
+    task_queue = queue.Queue(max_task)
+    for _ in range(max_task):
+        t = threading.Thread(target=thread_parser,
+                            args=(file_queue, pbar, output_folder))
+        t.daemon = True
+        t.start()
+
+    # Fill the queue with files.
+    for f in file_paths:
+        file_queue.put(f)
+
+    # Wait for all threads to be done.
+    file_queue.join()
+
+except KeyboardInterrupt:
+    os.kill(0, 9)
+
+
+
+
+    
+
 
 

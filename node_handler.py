@@ -1,5 +1,5 @@
 import utils
-from clang.cindex import CursorKind, AccessSpecifier
+from clang.cindex import CursorKind, AccessSpecifier, TypeKind
 from tree_node import Node
 import re
 
@@ -19,11 +19,25 @@ def handle_typedef(ast_item, parent_node):
 
 def handle_declaration(ast_item, parent_node, parse_item):
     if utils.is_function(ast_item):
+        if (ast_item.kind == CursorKind.FUNCTION_TEMPLATE):
+            template_decl = Node('TEMPLATE_DECL', is_reserved=True, parent=parent_node)
+            for child in ast_item.get_children():
+                if child.kind == CursorKind.TEMPLATE_TYPE_PARAMETER:
+                    templ_param = Node(child.kind.name, is_reserved=True, parent=template_decl)
+                    Node(child.spelling, is_reserved=False, parent=templ_param)
+
+
         func_decl = Node('FUNCTION_DECL', is_reserved=True, parent=parent_node)
+
+        if ast_item.access_specifier != AccessSpecifier.INVALID:
+            acc_spec = Node('ACCESS_SPECIFIER', is_reserved=True, parent=func_decl)
+            Node(ast_item.access_specifier.name, is_reserved=True, parent=acc_spec)
+
         name = Node('NAME', is_reserved=True, parent=func_decl)
         Node(ast_item.spelling, is_reserved=False, parent=name)
         return_type = Node('RETURN_TYPE', is_reserved=True, parent=func_decl)
         Node(ast_item.type.get_result().spelling, is_reserved=False, parent=return_type)
+
 
         children = ast_item.get_children()
         for child in children:
@@ -52,17 +66,31 @@ def handle_declaration(ast_item, parent_node, parse_item):
         return cmpnd_stmt
     elif ast_item.kind == CursorKind.VAR_DECL or ast_item.kind == CursorKind.FIELD_DECL:
         var_decl = Node(ast_item.kind.name, is_reserved=True, parent=parent_node)
+
+        if ast_item.access_specifier != AccessSpecifier.INVALID and ast_item.kind == CursorKind.FIELD_DECL:
+            acc_spec = Node('ACCESS_SPECIFIER', is_reserved=True, parent=var_decl)
+            Node(ast_item.access_specifier.name, is_reserved=True, parent=acc_spec)
+
         type_node = Node('TYPE', is_reserved=True, parent=var_decl)
         Node(ast_item.type.spelling, is_reserved=False, parent=type_node)
         declarator = Node('DECLARATOR', is_reserved=True, parent=var_decl)
         reference = Node('NAME', is_reserved=True, parent=declarator)
         Node(ast_item.spelling, is_reserved=False, parent=reference)
 
-        if ast_item.access_specifier != AccessSpecifier.INVALID:
-            acc_spec = Node('ACCESS_SPECIFIER', is_reserved=True, parent=var_decl)
-            Node(ast_item.access_specifier.name, is_reserved=True, parent=acc_spec)
-
         return declarator
+
+    elif utils.is_struct(ast_item):
+        # If parent is declarator we are declaring a structure variable so we
+        # do not want to declare the enitre structure again
+        if parent_node.label != 'DECLARATOR':
+            class_decl = Node('STRUCT_DECL', is_reserved=True, parent=parent_node)
+            name = Node('NAME', is_reserved=True, parent=class_decl)
+            Node(ast_item.spelling, is_reserved=False, parent=name)
+            cmpnd_stmt = Node('COMPOUND_STMT', is_reserved=True, parent=class_decl)
+
+            return cmpnd_stmt
+
+        return parent_node
 
 
 def handle_operator(ast_item, parent_node):
@@ -80,25 +108,53 @@ def handle_operator(ast_item, parent_node):
 def handle_literal(ast_item, parent_node):
     lit_type = Node(ast_item.kind.name, is_reserved=True, parent=parent_node)
 
-    # if ast_item.kind in [CursorKind.STRING_LITERAL, CursorKind.CHARACTER_LITERAL]:
-    #     print(ast_item.spelling, ast_item.kind.name)
-    #     print([c.spelling for c in ast_item.get_children()])
-    #     print(next(ast_item.get_tokens(), None).spelling)
-    #     Node(ast_item.spelling, is_reserved=False, parent=lit_type)
-    # else:
     token = next(ast_item.get_tokens(), None)
     if token:                
         Node(token.spelling, is_reserved=False, parent=lit_type)
+    else:
+        filename = ast_item.location.file.name
+        with open(filename, 'r') as fh:
+            contents = fh.read()
+        lit = contents[ast_item.extent.start.offset: ast_item.extent.end.offset]
+        Node(lit, is_reserved=False, parent=lit_type)
 
 
 def handle_call_expr(ast_item, parent_node, parse_item):
     func_name = None
+
+    # print(ast_item.spelling, ast_item.kind.name)
+    # if not ast_item.referenced:
+    #     for child in ast_item.get_children():
+    #         if child.type.kind == TypeKind.OVERLOAD:
+    #             func_name = list(child.get_children())[0].spelling
+
+    #     if not func_name:    
+            # func_node = utils.func_from_pointer(list(ast_item.get_children())[0])
+            # func_name = func_node.spelling
+            # print(list(ast_item.get_children())[0].type.spelling, list(ast_item.get_children())[0].kind.name)
+            # print(func_name, func_node.kind.name, func_node.type.spelling)
+            # print([(c.spelling, c.kind.name, c.type.kind) for c in ast_item.get_children()])
+            # for child in ast_item.get_children():
+            #     print([(c.spelling, c.kind.name, c.type.spelling) for c in child.get_children()])
+
+    # print('-----------------------')
     if ast_item.referenced:
+        
+        if 'struct' in ast_item.type.spelling:
+            return parent_node
         func_name = ast_item.referenced.spelling
     else:
-        # pointer to function
-        func_node = utils.func_from_pointer(list(ast_item.get_children())[0])
-        func_name = func_node.spelling
+        for child in ast_item.get_children():
+            if child.type.kind == TypeKind.OVERLOAD:
+                func_node = list(child.get_children())[0]
+                func_name = func_node.spelling
+                break
+
+        if not func_name:    
+            return parent_node
+            # pointer to function
+            # func_node = utils.func_from_pointer(list(ast_item.get_children())[0])
+            # func_name = func_node.spelling
 
     if not func_name:
         func_name = "FUNCTION_CALL"
@@ -107,7 +163,6 @@ def handle_call_expr(ast_item, parent_node, parse_item):
 
     func_call = Node(ast_item.kind.name, is_reserved=True, parent=parent_node)
     ref = Node('NAME', is_reserved=True, parent=func_call)
-    Node(func_name, is_reserved=False, parent=ref)
 
 
     if len(list(ast_item.get_arguments())) > 0:
@@ -116,19 +171,45 @@ def handle_call_expr(ast_item, parent_node, parse_item):
     for arg_item in ast_item.get_arguments():
         parse_item(arg_item, arg_node)
 
+    if func_name == 'vector':
+        Node(ast_item.type.spelling, is_reserved=False, parent=ref)
+        if len(list(ast_item.get_children())) > 0:
+            return Node('ARGUMENTS', is_reserved=True, parent=func_call)
+    else:
+        Node(func_name, is_reserved=False, parent=ref)
+
+
     return func_call
+    
 
 
 def handle_reference(ast_item, parent_node):
     # Ignore references to function calls as this has already been defined as the parent node
     parent_func_name = [n.children[0].label for n in parent_node.children if n.label == 'NAME']
     if ast_item.spelling \
-    and ast_item.spelling not in parent_func_name: #not in parent_func_name:
+    and ast_item.spelling not in parent_func_name:
         is_reserved = True
-        reference = Node('REF', is_reserved, parent=parent_node)
+        reference = Node(ast_item.kind.name, is_reserved, parent=parent_node)
         return Node(ast_item.spelling, False, parent=reference)
 
 
 def handle_type_ref(ast_item, parent_node):
-        type_ref = Node(ast_item.kind.name, is_reserved=True, parent=parent_node)
-        Node(ast_item.type.spelling, is_reserved=False, parent=type_ref)
+    type_ref = Node(ast_item.kind.name, is_reserved=True, parent=parent_node)
+    Node(ast_item.type.spelling, is_reserved=False, parent=type_ref)
+
+def handle_for_range(ast_item, parent_node):
+    stmt = Node(ast_item.kind.name, is_reserved=True, parent=parent_node)
+
+    # Handle first child that is always a variable declaration
+    first_child = next(ast_item.get_children())
+    var_decl = Node(first_child.kind.name, is_reserved=True, parent=stmt)
+    type_node = Node('TYPE', is_reserved=True, parent=var_decl)
+    Node(first_child.type.spelling, is_reserved=False, parent=type_node)
+    declarator = Node('DECLARATOR', is_reserved=True, parent=var_decl)
+    reference = Node('NAME', is_reserved=True, parent=declarator)
+    Node(first_child.spelling, is_reserved=False, parent=reference)
+
+    return stmt    
+
+    # print(ast_item.spelling, ast_item.kind.name)
+    # print([(c.spelling, c.kind.name) for c in ast_item.get_children()])

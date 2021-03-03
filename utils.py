@@ -26,7 +26,7 @@ def is_function(node):
      CursorKind.FUNCTION_TEMPLATE,
      CursorKind.CXX_METHOD,
      CursorKind.DESTRUCTOR, 
-     CursorKind.CONSTRUCTOR]) and node.is_definition():
+     CursorKind.CONSTRUCTOR]): # and node.is_definition(): <- TEST IF THIS CAN BE REMOVED WITHOUT ISSUES
             not_empty = False
             for _ in node.get_children():
                 not_empty = True
@@ -39,6 +39,9 @@ def is_class(node):
     return is_node_kind_safe(node, [CursorKind.CLASS_TEMPLATE,
                                     CursorKind.CLASS_TEMPLATE_PARTIAL_SPECIALIZATION,
                                     CursorKind.CLASS_DECL])
+
+def is_struct(node):
+    return is_node_kind_safe(node, [CursorKind.STRUCT_DECL])
 
 
 def is_literal(node):
@@ -209,6 +212,7 @@ def add_reference(parent_id, ast_node, parent_node, graph):
     is_reserved = True
     name = "REFERENCE"
     if ast_node.kind in [CursorKind.DECL_REF_EXPR, CursorKind.MEMBER_REF_EXPR]:
+        
         for token in ast_node.get_tokens():
             if token.kind == TokenKind.IDENTIFIER:
                 name = token.spelling
