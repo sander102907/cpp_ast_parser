@@ -1,3 +1,4 @@
+import os
 import clang.cindex
 from clang.cindex import CursorKind
 from anytree import RenderTree
@@ -5,7 +6,6 @@ from tree_node import Node
 from tidy_files import add_readability_braces, preprocess_file
 import utils
 from node_handler import *
-import os
 from tqdm import tqdm
 from anytree.exporter import JsonExporter
 import threading
@@ -17,7 +17,7 @@ class AstParser:
         try:
             clang.cindex.Config.set_library_file(clang_lib_file)
         except Exception as e:
-            print(f'Skipped setting library file: {e}')
+            print('Skipped setting library file: {}'.format(e))
 
         self.index = clang.cindex.Index.create()
 
@@ -166,7 +166,7 @@ def thread_parser(file_paths, pbar, output_folder):
 
 # Work with threads to increase the speed
 max_task = multiprocessing.cpu_count()
-file_paths = ['../data/subset/cpp/106395892.cpp']
+file_paths = ['../data/subset/test/test.cpp']
 input_folder = '../data/subset/cpp/'
 output_folder = '../data/subset/ast_trees/'
 
@@ -180,7 +180,6 @@ pbar = tqdm(total=len(file_paths))
 file_queue = queue.Queue(max_task)
 
 try:
-    task_queue = queue.Queue(max_task)
     for _ in range(max_task):
         t = threading.Thread(target=thread_parser,
                             args=(file_queue, pbar, output_folder))
