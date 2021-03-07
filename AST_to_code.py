@@ -8,13 +8,15 @@ import multiprocessing
 import queue as queue
 import os
 from tqdm import tqdm
+import json
+import re
 
 def get_operator(ast_item):
     operator = ast_item.label.split('_')[-1]
     code = ''
     if 'BINARY' in ast_item.label or 'COMPOUND_ASSIGNMENT' in ast_item.label:
         code += parse_node(ast_item.children[0])
-        code += operator
+        code += f' {operator} '
         code += parse_node(ast_item.children[1])
     elif 'UNARY' in ast_item.label:
         if 'POST' in ast_item.label:
@@ -37,7 +39,7 @@ def get_operator(ast_item):
 
     return code
 
-call_exp_operators = ['[]', '=', '<<', '>>', '==', '+', '-', '%', '*', '/']
+call_exp_operators = ['[]', '=', '<<', '>>', '==', '+', '-', '%', '*', '/', '+=', '-=', '^=']
 call_exp_operator_labels = ['operator' + op for op in call_exp_operators]
 
 
@@ -71,9 +73,17 @@ def get_var_decl(ast_item):
 
     for child in ast_item.children:
         # Skip the type if this is a child of a declaration statement and not the first child
+        #  and the type is the same as the type of the first child
         if child.label == 'TYPE' and \
-        not (ast_item.parent.label == 'DECL_STMT' and ast_item != ast_item.parent.children[0]):
-            var_type += child.children[0].label
+        not (ast_item.parent.label == 'DECL_STMT' \
+            and ast_item != ast_item.parent.children[0] \
+            and ast_item.parent.children[0].children[0].children[0].label == child.children[0].label):
+            if ast_item.parent.label == 'DECL_STMT' and \
+                ast_item.parent.children[0].children[0].children[0].label != child.children[0].label:
+                print(child.children[0].label)
+                var_type += ''.join(re.findall(r'\[.*\]', child.children[0].label))
+            else:
+                var_type += child.children[0].label
         elif child.label == 'DECLARATOR':
             for decl_child in child.children:
                 if decl_child.label == 'NAME':
@@ -83,11 +93,28 @@ def get_var_decl(ast_item):
         elif child.label == 'ACCESS_SPECIFIER':
             acc_spec += f'{child.children[0].label.lower()}:\n'
 
-    # Get number if dimensions -> e.g. ch[1][1] has 2 dimensions
-    dimensions = len(var_type.split('[')) - 1
 
-    # Format ref dimensions so e.g. ['2', '6400010'] -> ['[6400010]', '[2]']
-    ref_dims = ['[' + num + ']' for num in declarations[:dimensions][::-1]]
+    # get ref dims from type so e.g. int x[50][20] -> ['[50]', '[20]']
+    ref_dims = re.findall(r'\[[^\[\]]*\]', var_type)
+
+     # Get number if dimensions -> e.g. ch[1][1] has 2 dimensions
+    dimensions = len(ref_dims)
+
+    # bitset<N> bs[N]; -> Has two declarations of N, first is for <N> second is dimension, we do not need the <..> declarations
+    type_args = []
+    for el in re.findall(r'<[^<>]*>', var_type):
+        type_args += el.replace('<', '').replace('>', '').split(',')
+
+    for decl in declarations:
+        for arg in type_args:
+            if decl in arg:
+                type_args.remove(arg)
+                declarations.remove(decl)
+                break
+    
+
+    # ref_dims = ['[' + num + ']' for num in declarations[:dimensions][::-1]]
+
 
     # Format var type (remove dims) e.g. char [40] -> char
     var_type = var_type.split('[')[0].strip()
@@ -107,23 +134,27 @@ def get_var_decl(ast_item):
 def get_function_decl(ast_item):
     params = []
     acc_spec = ''
+    return_type = ''
+    const = ''
     for child in ast_item.children:
         if child.label == 'RETURN_TYPE':
-            return_type = child.children[0].label
+            return_type += child.children[0].label
         elif child.label == 'PARM_DECL':
             params.append(get_var_decl(child))
         elif child.label == 'NAME':
             func_name = child.children[0].label
         elif child.label == 'ACCESS_SPECIFIER':
             acc_spec += f'{child.children[0].label.lower()}:\n'
+        elif child.label == 'CONST':
+            const += ' const'
 
     
-    return f'{acc_spec}{return_type} {func_name}({", ".join(params)})'
+    return f'{acc_spec}{return_type} {func_name}({", ".join(params)}){const}'
 
 def parse_node(node):
     code = ''
 
-    if node.label == 'VAR_DECL' or node.label == 'FIELD_DECL':
+    if node.label == 'VAR_DECL' or node.label == 'FIELD_DECL' or node.label == 'UNEXPOSED_DECL':
         code += get_var_decl(node)
     elif node.label == 'FUNCTION_DECL':
         code += get_function_decl(node)
@@ -139,18 +170,25 @@ def parse_node(node):
         for child in node.children:
             code += parse_node(child)
         code += ')'
-    elif 'OPERATOR' in node.label:
+    elif 'OPERATOR' in node.label or 'UNARY_EXPR' in node.label:
         code += get_operator(node)
     elif node.label == 'GNU_NULL_EXPR':
         code += 'NULL'
     elif node.label == 'CXX_NULL_PTR_LITERAL_EXPR':
         code += 'nullptr'
+    elif node.label == 'COMPOUND_LITERAL_EXPR' or node.label == 'CSTYLE_CAST_EXPR':
+        code += '('
+        code += parse_node(node.children[0])
+        code += ')'
+        for child in node.children[1:]:
+            code += parse_node(child)
     elif node.label in ['DECL_REF_EXPR', 'MEMBER_REF_EXPR'] or 'LITERAL' in node.label:
         for child in node.children[0].children:
             code += parse_node(child)
 
-        if node.label == 'MEMBER_REF_EXPR': #node.parent.parent.label == 'REF':
+        if node.label == 'MEMBER_REF_EXPR' and len(node.children[0].children) > 0: #node.parent.parent.label == 'REF':
             code += '.'
+
         code += node.children[0].label
 
 
@@ -183,13 +221,29 @@ def parse_node(node):
             code += parse_node(child)
     elif node.label == 'FOR_STMT':
         code += 'for('
-        for i in range(3):
+
+        # Count amount of expressions in for loop (can essentialy be empty: for(;;))
+        for_stmt_expressions = 0
+
+        for child in node.children:
+            if child.label != 'COMPOUND_STMT':
+                for_stmt_expressions += 1
+            else:
+                break
+
+        # add ; for empty expressions e.g. if we have 2 expressions: for(;expr2;expr3)
+        for _ in range(3 - for_stmt_expressions):
+            code += ';'
+
+        # add expressions
+        for i in range(for_stmt_expressions):
             code += parse_node(node.children[i])
-            if i < 2:
+            if i < for_stmt_expressions - 1:
                 code += '; '
         code += ')'
 
-        for i in range(3, len(node.children)):
+        # parse for loop compound statement
+        for i in range(for_stmt_expressions, len(node.children)):
             code += parse_node(node.children[i])
     elif node.label == 'CALL_EXPR':
         if node.children[0].children[0].label in call_exp_operator_labels:
@@ -226,7 +280,9 @@ def parse_node(node):
         code += parse_node(node.children[1])
 
     elif node.label == 'TYPE_REF':
-        code += node.children[0].label + '::'
+        code += node.children[0].label
+        if node.parent.label != 'COMPOUND_LITERAL_EXPR' and not 'CAST' in node.parent.label:
+            code += '::'
 
     elif node.label == 'CLASS_DECL':
         code += 'class '
@@ -277,23 +333,32 @@ def parse_node(node):
         code += '>\n'
     elif node.label == 'TEMPLATE_TYPE_PARAMETER':
         code += f'typename {node.children[0].label}'
+    elif node.label == 'CXX_FUNCTIONAL_CAST_EXPR':
+        for child in node.children:
+            code += parse_node(child)
     else:
+        # print(node.label)
         pass
 
     if ('COMPOUND_STMT' in node.parent.label \
-    or node.parent.label == 'root') \
+    or node.parent.label == 'root' \
+    # If statement one-liner with no compound statement (= {..}), we still want ";" after each line
+    or (node.parent.label == 'IF_STMT' \
+    and 'COMPOUND_STMT' not in [c.label for c in node.parent.children] \
+    and node != node.parent.children[0])) \
     and (node.label != 'FUNCTION_DECL' \
     and node.label != 'IF_STMT' \
     and node.label != 'FOR_STMT' \
     and node.label != 'CXX_FOR_RANGE_STMT' \
     and node.label != 'WHILE_STMT' \
-    and node.label != 'TEMPLATE_DECL'):
+    and node.label != 'TEMPLATE_DECL') \
+    or (node.label == 'FUNCTION_DECL' and 'COMPOUND_STMT' not in [c.label for c in node.children]):
         code += ';\n'
 
     return code
 
 
-def thread_parser(file_queue, pbar, output_folder, importer):
+def thread_parser(file_queue, pbar, output_folder, importer, includes_usings):
      while True:
         file_path = file_queue.get()
 
@@ -313,26 +378,29 @@ def thread_parser(file_queue, pbar, output_folder, importer):
 
         output.close()
 
-        add_includes_usings(f'{output_folder}{file_name.split(".")[0]}.cpp', ['#include <bits/stdc++.h>', 'using namespace std;'])
+        add_includes_usings(f'{output_folder}{file_name.split(".")[0]}.cpp', includes_usings[str(file_name.split(".")[0])])
 
         pbar.update()
         file_queue.task_done()
 
 # Work with threads to increase the speed
 max_task = multiprocessing.cpu_count()
-file_paths = ['../data/subset/ast_trees/106395892.json']
+file_paths = []
 input_folder = '../data/subset/ast_trees/'
 output_folder = '../data/subset/ast_trees_to_code/'
 
-# for dirs,_,files in os.walk(input_folder):
-#     # Create folder to save data if it does not exist yet
-#     os.makedirs(f'{output_folder}{dirs}', exist_ok=True)
-#     for f in files:
-#     	file_paths.append(dirs + f)
+for dirs,_,files in os.walk(input_folder):
+    # Create folder to save data if it does not exist yet
+    os.makedirs(f'{output_folder}{dirs}', exist_ok=True)
+    for f in files:
+    	file_paths.append(dirs + f)
  
 pbar = tqdm(total=len(file_paths))
 file_queue = queue.Queue(max_task)
 importer = JsonImporter()
+
+f_in = open('imports.json', 'r')
+usings_includes = json.load(f_in)
 
 
 try:
@@ -342,7 +410,7 @@ try:
     lock = threading.Lock()
     for _ in range(max_task):
         t = threading.Thread(target=thread_parser,
-                            args=(file_queue, pbar, output_folder, importer,))
+                            args=(file_queue, pbar, output_folder, importer, usings_includes))
         t.daemon = True
         t.start()
 
@@ -352,6 +420,7 @@ try:
 
     # Wait for all threads to be done.
     file_queue.join()
+    f_in.close
 
 except KeyboardInterrupt:
     os.kill(0, 9)

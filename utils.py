@@ -65,7 +65,8 @@ def is_reference(node):
 def is_operator(node):
     return is_node_kind_safe(node, [CursorKind.BINARY_OPERATOR,
                                     CursorKind.UNARY_OPERATOR,
-                                    CursorKind.COMPOUND_ASSIGNMENT_OPERATOR])
+                                    CursorKind.COMPOUND_ASSIGNMENT_OPERATOR,
+                                    CursorKind.CXX_UNARY_EXPR])
 
 def is_typedef(node):
     return is_node_kind_safe(node, [CursorKind.TYPEDEF_DECL])
@@ -76,7 +77,7 @@ def is_call_expr(node):
 
 
 binary_operators = ['+', '-', '*', '/', '%', '&', '|', '>>']
-unary_operators = ['++', '--', '!']
+unary_operators = ['++', '--', '!', 'sizeof', 'addressof']
 comparison_operators = ['==', '<=', '>=', '<', '>', '!=', '&&', '||']
 unary_assignment_operators = [op + '=' for op in binary_operators]
 assignment_operators = ['='] + unary_assignment_operators
