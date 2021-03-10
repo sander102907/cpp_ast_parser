@@ -74,8 +74,8 @@ def program_tester(file_queue, pbar, solutions, problems, compile_folder, return
         compiled_file_path = f'{compile_folder}{solution}.out'
         if not os.path.isfile(compiled_file_path):
             proc = subprocess.Popen(['g++', file_path, '-o', compiled_file_path, '-std=c++17'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            # timeout after 5 seconds
-            t = Timer(5, proc.kill)
+            # timeout after 10 seconds
+            t = Timer(10, proc.kill)
             t.start()
             proc.wait()
 
@@ -87,7 +87,7 @@ def program_tester(file_queue, pbar, solutions, problems, compile_folder, return
         tests_split_filtered = list(filter(lambda a: a != '(' and a != ')' and a != ', ', tests_split))
 
         try:
-            start = time.time()
+            start = time.time() 
             for test in tests_split_filtered:
                 if time.time() - start > 10:
                     break
@@ -117,8 +117,8 @@ def program_tester(file_queue, pbar, solutions, problems, compile_folder, return
     
 
 if __name__ == '__main__':
-    input_folder = '../data/subset/ast_trees_to_code/'
-    compile_folder = '../data/subset/ast_trees_to_code_compiled/'
+    input_folder = '../data/ast_trees_to_code/'
+    compile_folder = '../data/ast_trees_to_code_compiled/'
     test_results_path = 'test_results.csv'
 
     test_programs(input_folder, compile_folder, test_results_path)

@@ -10,13 +10,13 @@ Custom tree node for the anytree module to contain
 """
 
 class Node(NodeMixin): 
-    def __init__(self, label, is_reserved, parent=None, children=None):
+    def __init__(self, token, is_reserved, parent=None, children=None):
         super(Node, self).__init__()
-        self.label = label
-        self.is_reserved = is_reserved
+        self.token = token
+        self.res = is_reserved
         self.parent = parent
         if children:
             self.children = children
             
     def __str__(self):
-        return self.label
+        return str(self.token)
