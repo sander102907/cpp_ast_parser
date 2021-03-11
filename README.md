@@ -12,6 +12,11 @@ The parser should work fine for any version of python 3. Before using `main.py` 
 
 The `main.py` file is the main utility from which the AST parser can be run to parse C++ code to ASTs and from ASTs back to c++ code.
 
+Running the AST parser will produce the following in the selected output folder:
+- AST trees in JSON format (compressed by default using .gz)
+- tokens.json -> A json dictionary containing token (id) and code pairs of user defined tokens (variable names, function names, etc.)
+- reserved_tokens.json -> A json dictionary containing token (id) and code pairs of reserved c++ tokens (operators, function declaration, etc.)
+
 It has the following command line interface:
 
 ```
