@@ -75,9 +75,8 @@ int add(int a, int b) {
 }
 ```
 
-### The AST (plotting is not 100% correct yet, no duplicate labels)
-![tree](https://user-images.githubusercontent.com/22891388/110127486-007b2880-7dc6-11eb-88b5-90703fc7d8e0.png)
-
+### The AST 
+![image](https://user-images.githubusercontent.com/22891388/110808167-08364380-8284-11eb-83d1-61afee13e547.png)
 
 ### The AST in JSON representation
 
