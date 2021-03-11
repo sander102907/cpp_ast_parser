@@ -29,7 +29,7 @@ optional arguments:
 
 ```
 
-A CSV file is used to read the code of the C++ programs (this is much faster than possibly millions of I/O operations on reading seperate files). This CSV file can either be created manually or it can be created with the `merge_solutions_metadata_code` from [this](https://github.com/sander102907/codeforces-scraper) repository and then using the `preprocess.py` file in this repository on the CSV. 
+A CSV file is used to read the code of the C++ programs (this is much faster than possibly millions of I/O operations on reading seperate files). This CSV file can either be created manually or it can be created with the `merge_solutions_metadata_code` from [this](https://github.com/sander102907/codeforces-scraper) repository and then using the `preprocess_files.py` file in this repository on the CSV. 
 
 The CSV file should contain the following columns (note that since this is originally meant for code competition solutions dataset, the term solution is used often):
 - solutionId (can be a program name or ID)
