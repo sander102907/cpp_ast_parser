@@ -2,6 +2,12 @@
 
 Parser for c++ code to an AST representation and also from the AST back to code. 
 
+## Requirements
+
+The parser should work fine for any version of python 3. Before using `main.py` install the requirements (setting up a virtual environment first is recommended):
+
+```pip3 install -r requirements.txt```
+
 ## Usage
 
 The `main.py` file is the main utility from which the AST parser can be run to parse C++ code to ASTs and from ASTs back to c++ code.
