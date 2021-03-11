@@ -319,7 +319,7 @@ class AstParser:
                     t.start()
 
                 # Fill the queue with files.
-                for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows())[:300]:
+                for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
                     # if program[1]['solutionId'] == 106395892:
                         file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
 
@@ -335,7 +335,14 @@ class AstParser:
 
             # Exit program with keyboard interrupt
             except KeyboardInterrupt:
+                # Clear the temporary files
+                self.clear_temp_files()
+
+                # Save tokens to file
+                self.res_tn.save()
+                self.tn.save()
                 os.kill(0, 9)
+
 
 
 

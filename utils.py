@@ -1,6 +1,4 @@
 import re
-import networkx as nx
-import uuid
 from clang.cindex import CursorKind, TokenKind
 import os
 
