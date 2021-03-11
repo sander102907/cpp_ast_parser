@@ -2,8 +2,53 @@
 
 Parser for c++ code to an AST representation and also from the AST back to code. 
 
+## Usage
+
+The `main.py` file is the main utility from which the AST parser can be run to parse C++ code to ASTs and from ASTs back to c++ code.
+
+It has the following command line interface:
+
+```
+usage: main.py [-h] -csv csv_file_path -o output_folder [-i input_folder] [-c use_compression] [-l libclang-path] method
+
+positional arguments:
+  method                The parse method: AST or code
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -csv csv_file_path, --csv_file_path csv_file_path
+                        the path to the CSV file containing data of c++ programs
+  -o output_folder, --output_folder output_folder
+                        the output folder to the data to
+  -i input_folder, --input_folder input_folder
+                        the input folder with AST json files to parse to code
+  -c use_compression, --use-compression use_compression
+                        Use compression for the ASTs
+  -l libclang-path, --libclang libclang-path
+                        path to clang library libclang.so file
+
+```
+
+A CSV file is used to read the code of the C++ programs (this is much faster than possibly millions of I/O operations on reading seperate files). This CSV file can either be created manually or it can be created with the `merge_solutions_metadata_code` from [this](https://github.com/sander102907/codeforces-scraper) repository and then using the `preprocess.py` file in this repository on the CSV. 
+
+The CSV file should contain the following columns (note that since this is originally meant for code competition solutions dataset, the term solution is used often):
+- solutionId (can be a program name or ID)
+- solution (The actual c++ code)
+- imports (The using and includes of the C++ file, for example: `#include<bits/stdc++.h>` and `using namespace std;`)
 
 ## Example
+
+To create ASTs from a CSV file with C++ programs, this is an example of how to run the program:\
+```python3 main.py AST -csv ../data/cpp_preprocessed/test.csv -o ../data/ast_trees/ -l /usr/lib/x86_64-linux-gnu/libclang-6.0.so.1```
+
+To set the CSV input file, the output folder to save the AST trees and the clang library file path.
+
+To parse ASTs back to the C++ programs, this is an example of how to run the program:\
+```python3 main.py code -csv ../data/cpp_preprocessed/test.csv -i ../data/ast_trees/ -o ../data/ast_trees_to_code/ -l /usr/lib/x86_64-linux-gnu/libclang-6.0.so.1```
+
+To set the CSV used for setting back the imports, the input folder containing the ASTs, the output folder to store the C++ programs and the clang library file path.
+
+
 
 ### A C++ program containing a simple add function
 ```
