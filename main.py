@@ -31,6 +31,13 @@ def main():
                              help='the input folder with AST json files to parse to code',
                              required=False)
 
+    args_parser.add_argument('-c', '--use-compression',
+                             metavar='use_compression',
+                             type=str,
+                             help='Use compression for the ASTs',
+                             required=False,
+                             default=True)
+
 
     args_parser.add_argument('-l', '--libclang',
                              metavar='libclang-path',
@@ -55,11 +62,13 @@ def main():
 
     libclang_path = args.libclang
 
+    use_compression = args.use_compression
+
     if parse_method == 'AST':
-        ast_parser = AstParser(libclang_path, csv_file_path, output_folder)
+        ast_parser = AstParser(libclang_path, csv_file_path, output_folder, use_compression)
         ast_parser.parse_csv()
     elif parse_method == 'code':
-        ast_to_code_parser = AstToCodeParser(input_folder, output_folder, csv_file_path)
+        ast_to_code_parser = AstToCodeParser(input_folder, output_folder, csv_file_path, use_compression)
         ast_to_code_parser.parse_asts_to_code()
     else:
         print('Please choose a valid method: AST or code')

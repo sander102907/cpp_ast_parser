@@ -117,8 +117,8 @@ def program_tester(file_queue, pbar, solutions, problems, compile_folder, return
     
 
 if __name__ == '__main__':
-    input_folder = '../data/ast_trees_to_code/'
+    input_folder = '../data/temp/'
     compile_folder = '../data/ast_trees_to_code_compiled/'
-    test_results_path = 'test_results.csv'
+    test_results_path = 'test_results2.csv'
 
     test_programs(input_folder, compile_folder, test_results_path)

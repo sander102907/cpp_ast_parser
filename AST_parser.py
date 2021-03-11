@@ -13,6 +13,7 @@ import json
 import pandas as pd
 import subprocess
 from tokenizer import Tokenizer
+import gzip
 
 """
 The AST Parser that can take as input a CSV file containing data of C++ programs:
@@ -26,7 +27,7 @@ item from the language (so not a variable name for example)
 """
 
 class AstParser:
-    def __init__(self, clang_lib_file, csv_file_path, output_folder):
+    def __init__(self, clang_lib_file, csv_file_path, output_folder, use_compression):
         # Try to set a library file for clang
         try:
             clang.cindex.Config.set_library_file(clang_lib_file)
@@ -53,6 +54,9 @@ class AstParser:
 
         # Create node handler object
         self.nh = NodeHandler(self.res_tn, self.tn)
+
+        # Boolean whether or not to use compression to save AST files as .gz
+        self.use_compression = use_compression
 
 
     def parse_ast(self, program, imports, thread_nr):
@@ -261,18 +265,22 @@ class AstParser:
         while True:
             # Get a program from the queue
             program_id, code, imports = file_queue.get()
-            # try:
+            try:
                 # Parse the AST tree for the program
-            ast = self.parse_ast(code, imports, thread_nr)
-            # except Exception as e:
-            #     print(f'Skipping file due to parsing failing: {program_id} - {e}')
-            #     pbar.update()
-            #     file_queue.task_done()
-            #     continue
+                ast = self.parse_ast(code, imports, thread_nr)
+            except Exception as e:
+                print(f'Skipping file due to parsing failing: {program_id} - {e}')
+                pbar.update()
+                file_queue.task_done()
+                continue
 
             # Write the AST tree to file
-            with open(f'{self.output_folder}{program_id}.json', 'w') as file:
-                file.write(self.exporter.export(ast))
+            if self.use_compression:
+                with gzip.open(f'{self.output_folder}{program_id}.gz', 'w') as fout:
+                    fout.write(self.exporter.export(ast).encode('utf-8')) 
+            else:
+                with open(f'{self.output_folder}{program_id}.json', 'w') as file:
+                    file.write(self.exporter.export(ast))
 
             # Mark as done    
             pbar.update()
@@ -311,7 +319,7 @@ class AstParser:
                     t.start()
 
                 # Fill the queue with files.
-                for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows())[:10]:
+                for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows())[:300]:
                     # if program[1]['solutionId'] == 106395892:
                         file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
 
@@ -320,6 +328,8 @@ class AstParser:
 
                 # Clear the temporary files
                 self.clear_temp_files()
+
+                # Save tokens to file
                 self.res_tn.save()
                 self.tn.save()
 

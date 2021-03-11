@@ -11,15 +11,15 @@ class Tokenizer:
         if label in self.token_dict:
             return self.token_dict[label]
         else:
-           self.token_dict[label] = len(self.token_dict)
-           self.label_dict[len(self.token_dict)] = label
+            token = len(self.token_dict)
+            self.token_dict[label] = token
+            self.label_dict[token] = label
+            return token
 
     def get_label(self, token):
-        # print(token)
         if token in self.label_dict:
             return self.label_dict[token]
         else:
-            # print(f'could not get label for token: {token}')
             return ''
 
     def save(self):

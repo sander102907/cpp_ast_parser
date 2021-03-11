@@ -1,8 +1,7 @@
 from anytree.importer import JsonImporter
 from anytree import RenderTree
 from anytree.search import find
-from utils import assignment_operators
-from tidy_files import add_includes_usings
+from utils import assignment_operators, add_includes_usings
 import threading
 import multiprocessing
 import queue as queue
@@ -12,9 +11,10 @@ import json
 import re
 import pandas as pd
 from tokenizer import Tokenizer
+import gzip
 
 class AstToCodeParser:
-    def __init__(self, input_folder, output_folder, csv_file_path):
+    def __init__(self, input_folder, output_folder, csv_file_path, use_compression):
          # CSV to get program data from
         self.csv_file_path = csv_file_path
 
@@ -34,6 +34,9 @@ class AstToCodeParser:
 
         # Create JSON importer
         self.importer = JsonImporter()
+
+        # Boolean indicating whether ASTs from the input folder are stored using compression
+        self.use_compression = use_compression
 
 
     def get_label(self, node):
@@ -445,7 +448,11 @@ class AstToCodeParser:
         while True:
             file_path = file_queue.get()
 
-            file = open(file_path, 'r').read()
+            if self.use_compression:
+                with gzip.open(file_path, 'r') as fin:
+                    file = fin.read().decode('utf-8')
+            else:
+                file = open(file_path, 'r').read()
 
             root = self.importer.import_(file)
 
@@ -485,7 +492,7 @@ class AstToCodeParser:
             # Create folder to save data if it does not exist yet
             os.makedirs(f'{self.output_folder}{dirs}', exist_ok=True)
             for f in files:
-                if f.endswith('.json') and f != 'tokens.json' and f!= 'reserved_tokens.json':
+                if f.endswith('.json') or f.endswith('.gz') and f != 'tokens.json' and f!= 'reserved_tokens.json':
                     file_paths.append(dirs + f)
         
         pbar = tqdm(total=len(file_paths))
