@@ -215,9 +215,7 @@ class AstParser:
             self.nh.handle_reference(ast_item, parent_node)
 
         elif ast_item.kind == CursorKind.LABEL_STMT:
-            stmt = Node(self.res_tn.get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
-            Node(self.tn.get_token(ast_item.spelling), is_reserved=False, parent=stmt)
-            parent_node = stmt
+            parent_node = self.nh.handle_label_stmt(ast_item, parent_node)
 
         # if not one of the above -> create simple parent node of the kind of the item
         elif ast_item.kind != CursorKind.TYPE_REF:

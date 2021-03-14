@@ -15,12 +15,14 @@ class NodeHandler:
         # Set first child als TYPE_DEF
         type_def = Node(self.res_tn.get_token('TYPE_DEF'),is_reserved=True, parent=typedef_decl)
         # Set value of TYPE def to type of TYPEDEF
-        Node(self.tn.get_token(ast_item.underlying_typedef_type.spelling), is_reserved=False, parent=type_def)
+        Node(self.get_tokens_label(ast_item.underlying_typedef_type.spelling, ast_item), is_reserved=False, parent=type_def)
+        # Node(self.tn.get_token(ast_item.underlying_typedef_type.spelling), is_reserved=False, parent=type_def)
 
         # Set second child as IDENTIFIER
         identifier = Node(self.res_tn.get_token('IDENTIFIER'), is_reserved=True, parent=typedef_decl)
         # Set value of IDENTIFIER to spelling of node
-        Node(self.tn.get_token(ast_item.spelling), is_reserved=False, parent=identifier)
+        Node(self.get_tokens_label(ast_item.spelling, ast_item), is_reserved=False, parent=identifier)
+        # Node(self.tn.get_token(ast_item.spelling), is_reserved=False, parent=identifier)
 
 
     def handle_declaration(self, ast_item, parent_node, parse_item, program): 
@@ -30,7 +32,8 @@ class NodeHandler:
                 for child in ast_item.get_children():
                     if child.kind == CursorKind.TEMPLATE_TYPE_PARAMETER:
                         templ_param = Node(self.res_tn.get_token(child.kind.name), is_reserved=True, parent=template_decl)
-                        Node(self.tn.get_token(child.spelling), is_reserved=False, parent=templ_param)
+                        Node(self.get_tokens_label(child.spelling, child), is_reserved=False, parent=templ_param)
+                        # Node(self.tn.get_token(child.spelling), is_reserved=False, parent=templ_param)
 
             
             func_decl = Node(self.res_tn.get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
@@ -41,10 +44,12 @@ class NodeHandler:
 
 
             name = Node(self.res_tn.get_token('NAME'), is_reserved=True, parent=func_decl)
-            Node(self.tn.get_token(ast_item.spelling), is_reserved=False, parent=name)
+            Node(self.get_tokens_label(ast_item.spelling, ast_item), is_reserved=False, parent=name)
+            # Node(self.tn.get_token(ast_item.spelling), is_reserved=False, parent=name)
             if ast_item.kind != CursorKind.CONSTRUCTOR:
                 return_type = Node(self.res_tn.get_token('RETURN_TYPE'), is_reserved=True, parent=func_decl)
-                Node(self.tn.get_token(ast_item.type.get_result().spelling), is_reserved=False, parent=return_type)
+                Node(self.get_tokens_label(ast_item.type.get_result().spelling, ast_item), is_reserved=False, parent=return_type)
+                # Node(self.tn.get_token(ast_item.type.get_result().spelling), is_reserved=False, parent=return_type)
 
             if ast_item.is_const_method():
                 Node(self.res_tn.get_token('CONST'), is_reserved=True, parent=func_decl)
@@ -59,12 +64,14 @@ class NodeHandler:
                         parm_declarations = True
 
                     type_node = Node(self.res_tn.get_token('TYPE'), is_reserved=True, parent=parm_decl)
-                    print(child.type.spelling)
-                    print([t.spelling for t in child.get_tokens()])
-                    Node(self.tn.get_token(child.type.spelling), is_reserved=False, parent=type_node)
+
+                    # Node(self.tn.get_token(child.type.spelling), is_reserved=False, parent=type_node)
+                    Node(self.get_tokens_label(child.type.spelling, child), is_reserved=False, parent=type_node)
+
                     declarator = Node(self.res_tn.get_token('DECLARATOR'), is_reserved=True, parent=parm_decl)
                     reference = Node(self.res_tn.get_token('NAME'), is_reserved=True, parent=declarator)
-                    Node(self.tn.get_token(child.spelling), is_reserved=False, parent=reference)
+                    Node(self.get_tokens_label(child.spelling, child), is_reserved=False, parent=reference)
+                    # Node(self.tn.get_token(child.spelling), is_reserved=False, parent=reference)
 
                     for c in child.get_children():
                         parse_item(c, declarator, program)
@@ -76,7 +83,8 @@ class NodeHandler:
                     constr_init = Node(self.res_tn.get_token('CONSTRUCTOR_INITIALIZER'), is_reserved=True, parent=func_decl)
 
                     member_ref = Node(self.res_tn.get_token(constructor_inits[i].kind.name), is_reserved=True, parent=constr_init)
-                    Node(self.tn.get_token(constructor_inits[i].spelling), is_reserved=False, parent=member_ref)
+                    Node(self.get_tokens_label(constructor_inits[i].spelling, constructor_inits[i]), is_reserved=False, parent=member_ref)
+                    # Node(self.tn.get_token(constructor_inits[i].spelling), is_reserved=False, parent=member_ref)
 
                     parse_item(constructor_inits[i + 1], constr_init, program)                
 
@@ -88,12 +96,14 @@ class NodeHandler:
                 for child in ast_item.get_children():
                     if child.kind == CursorKind.TEMPLATE_TYPE_PARAMETER:
                         templ_param = Node(self.res_tn.get_token(child.kind.name), is_reserved=True, parent=template_decl)
-                        Node(self.tn.get_token(child.spelling), is_reserved=False, parent=templ_param)
+                        Node(self.get_tokens_label(child.spelling, child), is_reserved=False, parent=templ_param)
+                        # Node(self.tn.get_token(child.spelling), is_reserved=False, parent=templ_param)
 
 
             class_decl = Node(self.res_tn.get_token('CLASS_DECL'), is_reserved=True, parent=parent_node)
             name = Node(self.res_tn.get_token('NAME'), is_reserved=True, parent=class_decl)
-            Node(self.tn.get_token(ast_item.spelling), is_reserved=False, parent=name)
+            Node(self.get_tokens_label(ast_item.spelling, ast_item), is_reserved=False, parent=name)
+            # Node(self.tn.get_token(ast_item.spelling), is_reserved=False, parent=name)
             cmpnd_stmt = Node(self.res_tn.get_token('COMPOUND_STMT'), is_reserved=True, parent=class_decl)
 
             return cmpnd_stmt
@@ -109,10 +119,12 @@ class NodeHandler:
             if ast_item.kind == CursorKind.UNEXPOSED_DECL or 'lambda' in ast_item.type.spelling:
                 Node(self.tn.get_token('auto'), is_reserved=False, parent=type_node)
             else:
-                Node(self.tn.get_token(ast_item.type.spelling), is_reserved=False, parent=type_node)
+                Node(self.get_tokens_label(ast_item.type.spelling, ast_item), is_reserved=False, parent=type_node)
+                # Node(self.tn.get_token(ast_item.type.spelling), is_reserved=False, parent=type_node)
             declarator = Node(self.res_tn.get_token('DECLARATOR'), is_reserved=True, parent=var_decl)
             reference = Node(self.res_tn.get_token('NAME'), is_reserved=True, parent=declarator)
-            Node(self.tn.get_token(ast_item.spelling), is_reserved=False, parent=reference)
+            Node(self.get_tokens_label(ast_item.spelling, ast_item), is_reserved=False, parent=reference)
+            # Node(self.tn.get_token(ast_item.spelling), is_reserved=False, parent=reference)
 
             return declarator
 
@@ -122,7 +134,8 @@ class NodeHandler:
             if self.res_tn.get_label(parent_node.token) != 'DECLARATOR':
                 class_decl = Node(self.res_tn.get_token('STRUCT_DECL'), is_reserved=True, parent=parent_node)
                 name = Node(self.res_tn.get_token('NAME'), is_reserved=True, parent=class_decl)
-                Node(self.tn.get_token(ast_item.spelling), is_reserved=False, parent=name)
+                Node(self.get_tokens_label(ast_item.spelling, ast_item), is_reserved=False, parent=name)
+                # Node(self.tn.get_token(ast_item.spelling), is_reserved=False, parent=name)
                 cmpnd_stmt = Node(self.res_tn.get_token('COMPOUND_STMT'), is_reserved=True, parent=class_decl)
 
                 return cmpnd_stmt
@@ -230,7 +243,8 @@ class NodeHandler:
             or (ast_item.referenced and ast_item.referenced.kind == CursorKind.CONSTRUCTOR and len(list(ast_item.get_children())) > 0):
                 # Do not call expressions with const before it
                 item_type = ast_item.type.spelling.replace('const', '')
-                Node(self.tn.get_token(item_type), is_reserved=False, parent=ref)
+                Node(self.get_tokens_label(item_type, ast_item), is_reserved=False, parent=ref)
+                # Node(self.tn.get_token(item_type), is_reserved=False, parent=ref)
                 return Node(self.res_tn.get_token('ARGUMENTS'), is_reserved=True, parent=func_call)
             else:
                 Node(self.tn.get_token(func_name), is_reserved=False, parent=ref)
@@ -255,7 +269,8 @@ class NodeHandler:
                             type_ref += token.spelling
 
                     type_ref_node = Node(self.res_tn.get_token('TYPE_REF'), is_reserved=True, parent=func_call)
-                    Node(self.tn.get_token(type_ref), is_reserved=False, parent=type_ref_node)
+                    Node(self.get_tokens_label(type_ref, ast_item), is_reserved=False, parent=type_ref_node)
+                    # Node(self.tn.get_token(type_ref), is_reserved=False, parent=type_ref_node)
 
 
             return func_call
@@ -279,7 +294,8 @@ class NodeHandler:
 
     def handle_type_ref(self, ast_item, parent_node):
         type_ref = Node(self.res_tn.get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
-        Node(self.tn.get_token(ast_item.type.spelling), is_reserved=False, parent=type_ref)
+        Node(self.get_tokens_label(ast_item.type.spelling, ast_item), is_reserved=False, parent=type_ref)
+        # Node(self.tn.get_token(ast_item.type.spelling), is_reserved=False, parent=type_ref)
 
     def handle_for_range(self, ast_item, parent_node):
         stmt = Node(self.res_tn.get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
@@ -288,10 +304,12 @@ class NodeHandler:
         first_child = next(ast_item.get_children())
         var_decl = Node(self.res_tn.get_token(first_child.kind.name), is_reserved=True, parent=stmt)
         type_node = Node(self.res_tn.get_token('TYPE'), is_reserved=True, parent=var_decl)
-        Node(self.tn.get_token(first_child.type.spelling), is_reserved=False, parent=type_node)
+        Node(self.get_tokens_label(first_child.type.spelling, first_child), is_reserved=False, parent=type_node)
+        # Node(self.tn.get_token(first_child.type.spelling), is_reserved=False, parent=type_node)
         declarator = Node(self.res_tn.get_token('DECLARATOR'), is_reserved=True, parent=var_decl)
         reference = Node(self.res_tn.get_token('NAME'), is_reserved=True, parent=declarator)
-        Node(self.tn.get_token(first_child.spelling), is_reserved=False, parent=reference)
+        Node(self.get_tokens_label(first_child.spelling, first_child), is_reserved=False, parent=reference)
+        # Node(self.tn.get_token(first_child.spelling), is_reserved=False, parent=reference)
 
         return stmt    
 
@@ -300,14 +318,16 @@ class NodeHandler:
         cast_expr = Node(self.res_tn.get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
         if not CursorKind.TYPE_REF in [c.kind for c in ast_item.get_children()]:
             cast_type = Node(self.res_tn.get_token('TYPE'), is_reserved=True, parent=cast_expr)
-            Node(self.tn.get_token(ast_item.type.spelling), is_reserved=False, parent=cast_type)
+            Node(self.get_tokens_label(ast_item.type.spelling, ast_item), is_reserved=False, parent=cast_type)
+            # Node(self.tn.get_token(ast_item.type.spelling), is_reserved=False, parent=cast_type)
         return cast_expr
 
     
     def handle_func_cast_expr(self, ast_item, parent_node):
         func_cast_expr = Node(self.res_tn.get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
         cast_type = Node(self.res_tn.get_token('TYPE'), is_reserved=True, parent=func_cast_expr)
-        Node(self.tn.get_token(ast_item.type.spelling), is_reserved=False, parent=cast_type)
+        Node(self.get_tokens_label(ast_item.type.spelling, ast_item), is_reserved=False, parent=cast_type)
+        # Node(self.tn.get_token(ast_item.type.spelling), is_reserved=False, parent=cast_type)
         return func_cast_expr
 
 
@@ -329,7 +349,8 @@ class NodeHandler:
 
         for capture_clause in capture_clauses:
             capt_clause_node = Node(self.res_tn.get_token('CAPTURE_CLAUSE'), is_reserved=True, parent=lambda_expr)
-            Node(self.tn.get_token(capture_clause), is_reserved=False, parent=capt_clause_node)
+            Node(self.get_tokens_label(capture_clause, ast_item), is_reserved=False, parent=capt_clause_node)
+            # Node(self.tn.get_token(capture_clause), is_reserved=False, parent=capt_clause_node)
 
 
         children = ast_item.get_children()
@@ -345,11 +366,13 @@ class NodeHandler:
                 if 'type-parameter' in child.type.spelling:
                     Node(self.tn.get_token('auto'), is_reserved=False, parent=type_node)
                 else:
-                    Node(self.tn.get_token(child.type.spelling), is_reserved=False, parent=type_node)
+                    Node(self.get_tokens_label(child.type.spelling, child), is_reserved=False, parent=type_node)
+                    # Node(self.tn.get_token(child.type.spelling), is_reserved=False, parent=type_node)
 
                 declarator = Node(self.res_tn.get_token('DECLARATOR'), is_reserved=True, parent=parm_decl)
                 reference = Node(self.res_tn.get_token('NAME'), is_reserved=True, parent=declarator)
-                Node(self.tn.get_token(child.spelling), is_reserved=False, parent=reference)
+                Node(self.get_tokens_label(child.spelling, child), is_reserved=False, parent=reference)
+                # Node(self.tn.get_token(child.spelling), is_reserved=False, parent=reference)
 
                 for c in child.get_children():
                     parse_item(c, declarator, program)
@@ -360,6 +383,28 @@ class NodeHandler:
     def handle_static_cast_expr(self, ast_item, parent_node):
         static_cast = Node(self.res_tn.get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
         cast_type = Node(self.res_tn.get_token('TYPE'), is_reserved=True, parent=static_cast)
-        Node(self.tn.get_token(ast_item.type.spelling), is_reserved=False, parent=cast_type)
+        Node(self.get_tokens_label(ast_item.type.spelling, ast_item), is_reserved=False, parent=cast_type)
+        # Node(self.tn.get_token(ast_item.type.spelling), is_reserved=False, parent=cast_type)
 
         return static_cast
+
+
+    def handle_label_stmt(self, ast_item, parent_node):
+        stmt = Node(self.res_tn.get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
+        Node(self.get_tokens_label(ast_item.spelling, ast_item), is_reserved=False, parent=stmt)
+        # Node(self.tn.get_token(ast_item.spelling), is_reserved=False, parent=stmt)
+        return stmt
+
+
+    "Split the label using the tokens of the ast_item to reduce amount of unique tokenized labels"
+    def get_tokens_label(self, label, ast_item):
+        return self.tn.get_token(label)
+        split_label = []
+        for t in [t.spelling for t in ast_item.get_tokens()]:
+            if t in label:
+                label = label.replace(t, '', 1)
+                split_label.append(t)
+            else:
+                break
+
+        return '|'.join([str(self.tn.get_token(lab)) for lab in split_label])
