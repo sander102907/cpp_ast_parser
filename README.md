@@ -12,6 +12,11 @@ The parser should work fine for any version of python 3. Before using `main.py` 
 
 The `main.py` file is the main utility from which the AST parser can be run to parse C++ code to ASTs and from ASTs back to c++ code.
 
+Running the AST parser will produce the following in the selected output folder:
+- AST trees in JSON format (compressed by default using .gz)
+- tokens.json -> A json dictionary containing token (id) and code pairs of user defined tokens (variable names, function names, etc.)
+- reserved_tokens.json -> A json dictionary containing token (id) and code pairs of reserved c++ tokens (operators, function declaration, etc.)
+
 It has the following command line interface:
 
 ```
@@ -70,9 +75,8 @@ int add(int a, int b) {
 }
 ```
 
-### The AST (plotting is not 100% correct yet, no duplicate labels)
-![tree](https://user-images.githubusercontent.com/22891388/110127486-007b2880-7dc6-11eb-88b5-90703fc7d8e0.png)
-
+### The AST 
+![image](https://user-images.githubusercontent.com/22891388/110808167-08364380-8284-11eb-83d1-61afee13e547.png)
 
 ### The AST in JSON representation
 
