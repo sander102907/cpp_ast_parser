@@ -14,7 +14,7 @@ from tokenizer import Tokenizer
 import gzip
 
 class AstToCodeParser:
-    def __init__(self, input_folder, output_folder, csv_file_path, use_compression):
+    def __init__(self, input_folder, output_folder, csv_file_path, use_compression, processes_num):
          # CSV to get program data from
         self.csv_file_path = csv_file_path
 
@@ -38,9 +38,11 @@ class AstToCodeParser:
         # Boolean indicating whether ASTs from the input folder are stored using compression
         self.use_compression = use_compression
 
+        # Number of parallel processes
+        self.processes_num = processes_num
+
 
     def get_label(self, node):
-        # print(node)
         if node.res:
             return self.res_tn.get_label(node.token)
         else:
@@ -54,6 +56,8 @@ class AstToCodeParser:
             code += f' {operator} '
             code += self.parse_node(ast_item.children[1])
         elif 'UNARY' in self.get_label(ast_item):
+            print(self.get_label(ast_item), operator)
+            print(ast_item.children)
             if 'POST' in self.get_label(ast_item):
                 code += self.parse_node(ast_item.children[0])
                 code += operator
@@ -83,7 +87,13 @@ class AstToCodeParser:
         if operator == '[]':
             code += self.parse_node(ast_item.children[1].children[0])
             code += f'[{self.parse_node(ast_item.children[1].children[1])}]'
-        elif operator == '*':
+        elif operator == '()':
+            code += self.parse_node(ast_item.children[1].children[0])
+            if len(ast_item.children[1].children) > 1:
+                code += f'({self.parse_node(ast_item.children[1].children[1])})'
+            else:
+                code += '()'
+        elif operator == '*' or len(ast_item.children[1].children) < 2:
             code += operator
             code += self.parse_node(ast_item.children[1].children[0])
         elif operator in ['++_PRE', '++_POST', '--_PRE', '--_POST']:
@@ -201,15 +211,33 @@ class AstToCodeParser:
                 if child == ast_item.parent:
                     function_decl_index = index + 1
 
-            last_parm_decl = ast_item.parent.parent.children[function_decl_index].children[-2].children[0].children[0]
-            if self.get_label(last_parm_decl).endswith('...'):
-                parameter_pack = True
+            if len(ast_item.parent.children) > function_decl_index and len(ast_item.parent.children[function_decl_index].children) > 1:
+                last_parm_decl = ast_item.parent.parent.children[function_decl_index].children[-2].children[0].children[0]
+                if self.get_label(last_parm_decl).endswith('...'):
+                    parameter_pack = True
 
         return f'typename{"..." if parameter_pack else ""} {self.get_label(ast_item.children[0])}'
 
 
+    def get_lambda_expr(self, ast_item):
+        capture_clauses = []
+        params = []
+
+        for child in ast_item.children:
+            if self.get_label(child) == 'CAPTURE_CLAUSE':
+                capture_clauses.append(self.get_label(child.children[0]))
+            elif self.get_label(child) == 'PARM_DECL':
+                params.append(self.get_var_decl(child))
+
+        
+        return f'[{", ".join(capture_clauses)}]({", ".join(params)})'
+
+
     def parse_node(self, node):
-        call_exp_operators = ['[]', '=', '<<', '>>', '==', '+', '-', '%', '*', '/', '+=', '-=', '^=', '++_PRE', '++_POST', '--_PRE', '--_POST']
+        call_exp_operators = ['[]', '=', '<<', '>>', '==', '+', '-', '%', '*', '/',
+                             '+=', '-=', '^=', '||', '()',
+                             '++_PRE', '++_POST', '--_PRE', '--_POST']
+
         call_exp_operator_labels = ['operator' + op for op in call_exp_operators]
         code = ''
 
@@ -241,7 +269,7 @@ class AstToCodeParser:
             code += ')'
             for child in node.children[1:]:
                 code += self.parse_node(child)
-        elif self.get_label(node) in ['DECL_REF_EXPR', 'MEMBER_REF_EXPR', 'MEMBER_REF'] or 'LITERAL' in self.get_label(node):
+        elif self.get_label(node) in ['DECL_REF_EXPR', 'MEMBER_REF_EXPR', 'MEMBER_REF', 'LABEL_REF'] or 'LITERAL' in self.get_label(node):
             for child in node.children[0].children:
                 code += self.parse_node(child)
 
@@ -391,11 +419,15 @@ class AstToCodeParser:
                 if index < len(node.children) - 1:
                     code += ','
             code += '>\n'
+
         elif self.get_label(node) == 'TEMPLATE_TYPE_PARAMETER':
             code += self.get_temp_type_param(node)
         elif self.get_label(node) == 'CXX_FUNCTIONAL_CAST_EXPR':
-            for child in node.children:
+            code += f'{self.get_label(node.children[0].children[0])}('
+            for child in node.children[1:]:
                 code += self.parse_node(child)
+            
+            code += ')'
 
         elif self.get_label(node) == 'CONSTRUCTOR_INITIALIZER':
             constr_inits = []
@@ -409,7 +441,9 @@ class AstToCodeParser:
                 code += ' : '
             
             code += self.parse_node(node.children[0]) + '('
-            code += self.parse_node(node.children[1]) + ')'
+            if len(node.children) > 1:
+                code += self.parse_node(node.children[1])
+            code += ')'
 
             # If not last constr init, place comma in between constr inits
             if node != constr_inits[-1]:
@@ -422,6 +456,72 @@ class AstToCodeParser:
 
         elif self.get_label(node) == 'CXX_THIS_EXPR':
             code += 'this->'
+
+
+        elif self.get_label(node) == 'SWITCH_STMT':
+            code += 'switch('
+            code += self.parse_node(node.children[0])
+            code += ')'
+            for child in node.children[1:]:
+                code += self.parse_node(child)
+
+        elif self.get_label(node) == 'CASE_STMT':
+            code += 'case '
+            code += self.parse_node(node.children[0])
+            code += ':\n'
+            for child in node.children[1:]:
+                code += self.parse_node(child)
+
+
+        elif self.get_label(node) == 'CXX_TRY_STMT':
+            code += 'try'
+            for child in node.children:
+                code += self.parse_node(child)
+
+        elif self.get_label(node) == 'CXX_CATCH_STMT':
+            if len(node.children) < 2:
+                code += 'catch(...)'
+                for child in node.children:
+                    code += self.parse_node(child)
+            
+            else:
+                code += 'catch('
+                code += self.parse_node(node.children[0])
+                code += ')'
+                for child in node.children[1:]:
+                    code += self.parse_node(child)
+
+        elif self.get_label(node) == 'LAMBDA_EXPR':
+            code += self.get_lambda_expr(node)
+            for child in node.children:
+                code += self.parse_node(child)
+
+        elif self.get_label(node) == 'CXX_STATIC_CAST_EXPR':
+            code += f'static_cast<{self.get_label(node.children[0].children[0])}>('
+            for child in node.children[1:]:
+                code += self.parse_node(child)
+
+            code += ')'
+
+
+        elif self.get_label(node) == 'DO_STMT':
+            code += 'do'
+            code += self.parse_node(node.children[0])
+            code += 'while('
+            for child in node.children[1:]:
+                code += self.parse_node(child)
+            code += ')'
+
+        elif self.get_label(node) == 'GOTO_STMT':
+            code += 'goto '
+            for child in node.children:
+                code += self.parse_node(child)
+
+        elif self.get_label(node) == 'LABEL_STMT':
+            code += f'{self.get_label(node.children[0])}:\n'
+            for child in node.children[1:]:
+                code += self.parse_node(child)
+
         else:
             # print(self.get_label(node))
             pass
@@ -475,28 +575,31 @@ class AstToCodeParser:
             # print(imports.keys())
 
             imports_file = imports[int(file_name.split(".")[0])]
-            imports_file = imports_file[1:-1].replace("'", "").split(', ')
+            imports_file = [ele for ele in imports_file[1:-1].split("'") if ele != '' and ele != ', ']
+            # Sort so includes come first (might be needed in usings)
+            imports_file.sort()
+
+            # This is not always added but sometimes needed e.g.: std::cout is used in original code but we simply use cout
+            if 'using namespace std;' not in imports_file:
+                imports_file.append('using namespace std;')
 
             add_includes_usings(f'{output_folder}{file_name.split(".")[0]}.cpp', imports_file)
-
             pbar.update()
             file_queue.task_done()
 
 
     def parse_asts_to_code(self):
-        # Work with threads to increase the speed
-        max_task = multiprocessing.cpu_count()
         file_paths = []
 
         for dirs,_,files in os.walk(self.input_folder):
             # Create folder to save data if it does not exist yet
             os.makedirs(f'{self.output_folder}{dirs}', exist_ok=True)
             for f in files:
-                if f.endswith('.json') or f.endswith('.gz') and f != 'tokens.json' and f!= 'reserved_tokens.json':
+                if f.startswith('46717455') and (f.endswith('.json') or f.endswith('.gz')) and f != 'tokens.json' and f!= 'reserved_tokens.json':
                     file_paths.append(dirs + f)
         
         pbar = tqdm(total=len(file_paths))
-        file_queue = queue.Queue(max_task)
+        file_queue = queue.Queue(self.processes_num)
 
         metadata_file = pd.read_csv(self.csv_file_path)
         metadata_file = metadata_file[['solutionId', 'imports']]
@@ -506,7 +609,7 @@ class AstToCodeParser:
 
         try:
             # List of files with a non-zero return code.
-            for _ in range(max_task):
+            for _ in range(self.processes_num):
                 t = threading.Thread(target=self.thread_parser,
                                     args=(file_queue, pbar, self.output_folder, imports))
                 t.daemon = True

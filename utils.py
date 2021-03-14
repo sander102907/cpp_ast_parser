@@ -76,7 +76,7 @@ def is_call_expr(node):
 
 
 binary_operators = ['+', '-', '*', '/', '%', '&', '|', '>>']
-unary_operators = ['++', '--', '!', 'sizeof', 'addressof']
+unary_operators = ['++', '--', '!', '~', 'not', 'sizeof', 'addressof', 'alignof']
 comparison_operators = ['==', '<=', '>=', '<', '>', '!=', '&&', '||']
 unary_assignment_operators = [op + '=' for op in binary_operators]
 assignment_operators = ['='] + unary_assignment_operators

@@ -25,9 +25,8 @@ def preprocess_solution(row):
     include_regex = re.compile(r'^#*.include')
     using_regex = re.compile(r'^using')
     lines = re.split(';|\n', solution)
-    includes_usings += [element + ';' for element in list(filter(using_regex.search, lines))]
     includes_usings += list(filter(include_regex.search, lines))
-
+    includes_usings += [element + ';' for element in list(filter(using_regex.search, lines))]
 
     if not '#define ONLINE_JUDGE' in solution:
         solution = '#define ONLINE_JUDGE \n' + solution

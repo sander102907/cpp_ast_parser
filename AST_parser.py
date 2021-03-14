@@ -5,7 +5,6 @@ from tree_node import Node
 import utils
 from node_handler import NodeHandler
 from tqdm import tqdm
-from anytree.exporter import JsonExporter
 import threading
 import multiprocessing
 import queue as queue
@@ -14,6 +13,7 @@ import pandas as pd
 import subprocess
 from tokenizer import Tokenizer
 import gzip
+from AST_file_handler import AstFileHandler
 
 """
 The AST Parser that can take as input a CSV file containing data of C++ programs:
@@ -27,7 +27,7 @@ item from the language (so not a variable name for example)
 """
 
 class AstParser:
-    def __init__(self, clang_lib_file, csv_file_path, output_folder, use_compression):
+    def __init__(self, clang_lib_file, csv_file_path, output_folder, use_compression, processes_num):
         # Try to set a library file for clang
         try:
             clang.cindex.Config.set_library_file(clang_lib_file)
@@ -43,9 +43,6 @@ class AstParser:
         # Output folder to save data to
         self.output_folder = output_folder
 
-        # Create exporter to export the tree to JSON format
-        self.exporter = JsonExporter(indent=2)
-
         # Create reserved label tokenizer
         self.res_tn = Tokenizer(output_folder + 'reserved_tokens.json')
 
@@ -55,9 +52,14 @@ class AstParser:
         # Create node handler object
         self.nh = NodeHandler(self.res_tn, self.tn)
 
+        # Create AST file handler object
+        self.ast_file_handler = AstFileHandler(self.output_folder, use_compression)
+
         # Boolean whether or not to use compression to save AST files as .gz
         self.use_compression = use_compression
 
+        # Number of parallel processes
+        self.processes_num = processes_num
 
     def parse_ast(self, program, imports, thread_nr):
         # Create temp file path for each trhead for clang to save in memory contents
@@ -70,7 +72,7 @@ class AstParser:
         tu = self.index.parse(
                             temp_file_path,
                             unsaved_files=[(temp_file_path, preprocessed_program)],
-                            args=['-x', 'c++', '-std=c++17'],
+                            args=['-x', 'c++', '-std=c++17', '-fpreprocessed'],
                             options=0)
 
         # Retrieve only the cursor items (children) that contain the program code (no import code)
@@ -116,7 +118,7 @@ class AstParser:
         program_lines = preprocessed_program.split('\n')
 
         # First get the saved imports (includes)
-        imports = imports[1:-1].replace("'", "").split(', ')
+        imports = [ele for ele in imports[1:-1].split("'") if ele != '' and ele != ', ']
 
         # Add imports to the first lines of the new filtered program
         preprocessed_program_filtered = '\n'.join([imp for imp in imports if imp.startswith('#')])
@@ -188,7 +190,8 @@ class AstParser:
             and self.res_tn.get_label(parent_node.token) != 'DECLARATOR' \
             and self.res_tn.get_label(parent_node.token) != 'FUNCTION_DECL'\
             and self.res_tn.get_label(parent_node.token) != 'FUNCTION_TEMPLATE'\
-            and self.res_tn.get_label(parent_node.token != 'ARGUMENTS'):
+            and self.res_tn.get_label(parent_node.token != 'ARGUMENTS')\
+            and self.res_tn.get_label(parent_node.token) != 'CXX_FUNCTIONAL_CAST_EXPR':
             self.nh.handle_type_ref(ast_item, parent_node)
 
         # Parse for range -> for(int a:v) {...}
@@ -199,8 +202,26 @@ class AstParser:
         elif ast_item.kind == CursorKind.CSTYLE_CAST_EXPR:
             parent_node = self.nh.handle_cast_expr(ast_item, parent_node)
 
+        elif ast_item.kind == CursorKind.CXX_FUNCTIONAL_CAST_EXPR:
+            parent_node = self.nh.handle_func_cast_expr(ast_item, parent_node)
+
+        elif ast_item.kind == CursorKind.LAMBDA_EXPR:
+            parent_node = self.nh.handle_lambda_expr(ast_item, parent_node, self.parse_item, program)
+
+        elif ast_item.kind == CursorKind.CXX_STATIC_CAST_EXPR:
+            parent_node = self.nh.handle_static_cast_expr(ast_item, parent_node)
+
+        elif ast_item.kind == CursorKind.LABEL_REF:
+            self.nh.handle_reference(ast_item, parent_node)
+
+        elif ast_item.kind == CursorKind.LABEL_STMT:
+            stmt = Node(self.res_tn.get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
+            Node(self.tn.get_token(ast_item.spelling), is_reserved=False, parent=stmt)
+            parent_node = stmt
+
         # if not one of the above -> create simple parent node of the kind of the item
         elif ast_item.kind != CursorKind.TYPE_REF:
+            # print(ast_item.spelling, ast_item.kind.name)
             parent_node = Node(self.res_tn.get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
 
         # Do not iterate through children that we have already treated as arguments
@@ -244,7 +265,8 @@ class AstParser:
         elif ast_item.kind == CursorKind.WHILE_STMT:
             for index, child in enumerate(ast_item.get_children()):
                 if index == 0 or (index > 0 and child.kind == CursorKind.COMPOUND_STMT):
-                    self.parse_item(child, parent_node, program)
+                    self.parse_item(child, parent_node, program)       
+
 
         # Standard case, process all the children of the node recursively
         else:
@@ -262,7 +284,7 @@ class AstParser:
 
 
     def thread_parser(self, file_queue, pbar, thread_nr):
-        while True:
+        while not file_queue.empty():
             # Get a program from the queue
             program_id, code, imports = file_queue.get()
             try:
@@ -275,73 +297,78 @@ class AstParser:
                 continue
 
             # Write the AST tree to file
-            if self.use_compression:
-                with gzip.open(f'{self.output_folder}{program_id}.gz', 'w') as fout:
-                    fout.write(self.exporter.export(ast).encode('utf-8')) 
-            else:
-                with open(f'{self.output_folder}{program_id}.json', 'w') as file:
-                    file.write(self.exporter.export(ast))
+            self.ast_file_handler.add_ast(ast, program_id)
+
 
             # Mark as done    
             pbar.update()
             file_queue.task_done()
 
     def clear_temp_files(self):
-        for i in range(multiprocessing.cpu_count()):
+        for i in range(self.processes_num):
             os.remove(f'tmp{i}.cpp')
+
+
+    def __cleanup(self):
+        # Save tokens to file
+        self.res_tn.save()
+        self.tn.save()
+        self.ast_file_handler.save()
+        
+
+        # Clear the temporary files
+        try:
+            self.clear_temp_files()
+        # If number of files < number of threads, there less temp files than we want to remove
+        except FileNotFoundError:
+            pass
 
 
     def parse_csv(self):
         print('Parsing programs ...')
 
-        # Work with threads to increase the speed
-        max_task = multiprocessing.cpu_count()
-
         # Create output directory if it does not exist yet
         os.makedirs(self.output_folder, exist_ok=True)
 
         # Read csv file in chunks (may be very large)
-        programs = pd.read_csv(self.csv_file_path, chunksize=5e5)
+        programs = pd.read_csv(self.csv_file_path, chunksize=1e2)
 
         # iterate over the chunks
         for programs_chunk in programs:
             # Create progressbar
             pbar = tqdm(total=len(programs_chunk))
             # Create file queue to store the program data
-            file_queue = queue.Queue(max_task)
+            file_queue = queue.Queue(len(programs_chunk))
+
+            # Fill the queue with files.
+            for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
+                # if program[1]['solutionId'] == 104465269:
+                    file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
 
             try:
+                threads = []
                 # Create threads which parse ASTs
-                for thread_nr in range(max_task):
+                for thread_nr in range(self.processes_num):
                     t = threading.Thread(target=self.thread_parser,
                                         args=(file_queue, pbar, thread_nr))
                     t.daemon = True
                     t.start()
-
-                # Fill the queue with files.
-                for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
-                    # if program[1]['solutionId'] == 106395892:
-                        file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
+                    threads.append(t)
 
                 # Wait for all threads to be done.
-                file_queue.join()
-
-                # Clear the temporary files
-                self.clear_temp_files()
-
-                # Save tokens to file
-                self.res_tn.save()
-                self.tn.save()
+                file_queue.join()    
+                for thread in threads:
+                    thread.join()              
+                self.ast_file_handler.save()
+                                
 
             # Exit program with keyboard interrupt
             except KeyboardInterrupt:
-                # Clear the temporary files
-                self.clear_temp_files()
-
-                # Save tokens to file
-                self.res_tn.save()
-                self.tn.save()
+                self.__cleanup()
                 os.kill(0, 9)
+
+        self.__cleanup()
+
 
 
 

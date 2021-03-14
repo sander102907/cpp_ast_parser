@@ -81,6 +81,14 @@ class NodeHandler:
             return func_decl
 
         elif utils.is_class(ast_item):
+            if ast_item.kind == CursorKind.CLASS_TEMPLATE:
+                template_decl = Node(self.res_tn.get_token('TEMPLATE_DECL'), is_reserved=True, parent=parent_node)
+                for child in ast_item.get_children():
+                    if child.kind == CursorKind.TEMPLATE_TYPE_PARAMETER:
+                        templ_param = Node(self.res_tn.get_token(child.kind.name), is_reserved=True, parent=template_decl)
+                        Node(self.tn.get_token(child.spelling), is_reserved=False, parent=templ_param)
+
+
             class_decl = Node(self.res_tn.get_token('CLASS_DECL'), is_reserved=True, parent=parent_node)
             name = Node(self.res_tn.get_token('NAME'), is_reserved=True, parent=class_decl)
             Node(self.tn.get_token(ast_item.spelling), is_reserved=False, parent=name)
@@ -95,8 +103,8 @@ class NodeHandler:
                 Node(self.res_tn.get_token(ast_item.access_specifier.name), is_reserved=True, parent=acc_spec)
 
             type_node = Node(self.res_tn.get_token('TYPE'), is_reserved=True, parent=var_decl)
-            # unexposed declarations get type auto
-            if ast_item.kind == CursorKind.UNEXPOSED_DECL:
+            # unexposed declarations and lambda declarations get type auto
+            if ast_item.kind == CursorKind.UNEXPOSED_DECL or 'lambda' in ast_item.type.spelling:
                 Node(self.tn.get_token('auto'), is_reserved=False, parent=type_node)
             else:
                 Node(self.tn.get_token(ast_item.type.spelling), is_reserved=False, parent=type_node)
@@ -140,15 +148,20 @@ class NodeHandler:
                 op_name = tokens[0].spelling
                 if op_name in ['++', '--']:
                     op_name = 'PRE_' + op_name
-            else:
+            elif utils.is_operator_token(tokens[-1].spelling):
                 op_name = tokens[-1].spelling
                 if op_name in ['++', '--']:
                     op_name = 'POST_' + op_name
+            else:
+                print(f'UNARY OPERATOR EXCEPTION: {[t.spelling for t in tokens]}')
+                op_name = ''
 
             op_name = [op_name]
 
         else:
             op_name = utils.get_operator(ast_item)
+
+        # print(ast_item.kind.name.strip() + '_' + '_'.join(op_name))
             
         operator = Node(self.res_tn.get_token(ast_item.kind.name.strip() + '_' + '_'.join(op_name)), is_reserved=True, parent=parent_node)
 
@@ -248,9 +261,12 @@ class NodeHandler:
 
 
     def handle_reference(self, ast_item, parent_node):
-        parent_func_name = [self.res_tn.get_label(n.children[0].token) if n.children[0].res else self.tn.get_label(n.children[0].token)
-                            for n in parent_node.children
-                            if self.res_tn.get_label(n.token) == 'NAME' and self.res_tn.get_label(parent_node.token) != 'DECLARATOR']
+        if parent_node:
+            parent_func_name = [self.res_tn.get_label(n.children[0].token) if n.children[0].res else self.tn.get_label(n.children[0].token)
+                                for n in parent_node.children
+                                if self.res_tn.get_label(n.token) == 'NAME' and self.res_tn.get_label(parent_node.token) != 'DECLARATOR']
+        else:
+            parent_func_name = []
         if ast_item.spelling \
         and ast_item.spelling not in parent_func_name:
 
@@ -284,3 +300,64 @@ class NodeHandler:
             cast_type = Node(self.res_tn.get_token('TYPE'), is_reserved=True, parent=cast_expr)
             Node(self.tn.get_token(ast_item.type.spelling), is_reserved=False, parent=cast_type)
         return cast_expr
+
+    
+    def handle_func_cast_expr(self, ast_item, parent_node):
+        func_cast_expr = Node(self.res_tn.get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
+        cast_type = Node(self.res_tn.get_token('TYPE'), is_reserved=True, parent=func_cast_expr)
+        Node(self.tn.get_token(ast_item.type.spelling), is_reserved=False, parent=cast_type)
+        return func_cast_expr
+
+
+    def handle_lambda_expr(self, ast_item, parent_node, parse_item, program):
+        lambda_expr = Node(self.res_tn.get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
+        tokens = [t.spelling for t in ast_item.get_tokens()][1:]
+        capture_clause_ended = False
+        capture_clause_tokens = []
+        for token in tokens:
+            if token == ']':
+                capture_clause_ended = True
+
+            if capture_clause_ended:
+                break
+
+            capture_clause_tokens.append(token)
+
+        capture_clauses = ''.join(capture_clause_tokens).split(',')
+
+        for capture_clause in capture_clauses:
+            capt_clause_node = Node(self.res_tn.get_token('CAPTURE_CLAUSE'), is_reserved=True, parent=lambda_expr)
+            Node(self.tn.get_token(capture_clause), is_reserved=False, parent=capt_clause_node)
+
+
+        children = ast_item.get_children()
+        for child in children:
+            parm_declarations = False
+            if child.kind == CursorKind.PARM_DECL:
+                if not parm_declarations:
+                    parm_decl = Node(self.res_tn.get_token('PARM_DECL'), is_reserved=True, parent=lambda_expr)
+                    parm_declarations = True
+                type_node = Node(self.res_tn.get_token('TYPE'), is_reserved=True, parent=parm_decl)
+
+                # If parameter type cannot be resolved, it is auto
+                if 'type-parameter' in child.type.spelling:
+                    Node(self.tn.get_token('auto'), is_reserved=False, parent=type_node)
+                else:
+                    Node(self.tn.get_token(child.type.spelling), is_reserved=False, parent=type_node)
+
+                declarator = Node(self.res_tn.get_token('DECLARATOR'), is_reserved=True, parent=parm_decl)
+                reference = Node(self.res_tn.get_token('NAME'), is_reserved=True, parent=declarator)
+                Node(self.tn.get_token(child.spelling), is_reserved=False, parent=reference)
+
+                for c in child.get_children():
+                    parse_item(c, declarator, program)
+
+        return lambda_expr
+
+
+    def handle_static_cast_expr(self, ast_item, parent_node):
+        static_cast = Node(self.res_tn.get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
+        cast_type = Node(self.res_tn.get_token('TYPE'), is_reserved=True, parent=static_cast)
+        Node(self.tn.get_token(ast_item.type.spelling), is_reserved=False, parent=cast_type)
+
+        return static_cast

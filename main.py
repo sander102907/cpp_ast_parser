@@ -1,6 +1,7 @@
 import argparse
 from AST_parser import AstParser
 from AST_to_code import AstToCodeParser
+import multiprocessing
 
 
 def main():
@@ -46,10 +47,21 @@ def main():
                              required=False)
 
 
+    args_parser.add_argument('-p', '--processes_num',
+                             metavar='processes-number',
+                             type=int,
+                             help='number of parallel processes',
+                             default=multiprocessing.cpu_count(),
+                             required=False)
+
+
     args = args_parser.parse_args()
 
     parse_method = args.method
     print('The parse method: ' + str(parse_method))
+
+    processes_num = args.processes_num
+    print('Number of parallel processes: ' + str(processes_num))
 
     csv_file_path = args.csv_file_path
     print('CSV file path: ' + str(csv_file_path))
@@ -57,18 +69,19 @@ def main():
     output_folder = args.output_folder
     print('Output folder: ' + str(output_folder))
 
-    input_folder = args.input_folder
-    print('Input folder: ' + str(input_folder))
+
 
     libclang_path = args.libclang
 
     use_compression = args.use_compression
 
     if parse_method == 'AST':
-        ast_parser = AstParser(libclang_path, csv_file_path, output_folder, use_compression)
+        ast_parser = AstParser(libclang_path, csv_file_path, output_folder, use_compression, processes_num)
         ast_parser.parse_csv()
     elif parse_method == 'code':
-        ast_to_code_parser = AstToCodeParser(input_folder, output_folder, csv_file_path, use_compression)
+        input_folder = args.input_folder
+        print('Input folder: ' + str(input_folder))
+        ast_to_code_parser = AstToCodeParser(input_folder, output_folder, csv_file_path, use_compression, processes_num)
         ast_to_code_parser.parse_asts_to_code()
     else:
         print('Please choose a valid method: AST or code')
