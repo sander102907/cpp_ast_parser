@@ -3,6 +3,7 @@ import pandas as pd
 import gzip
 from anytree.exporter import JsonExporter
 import sys
+from io import BytesIO
 
 class AstFileHandler:
     def __init__(self, output_folder, use_compression):
@@ -16,10 +17,7 @@ class AstFileHandler:
 
 
     def add_ast(self, ast, id):
-        if self.use_compression:
-            output = gzip.compress(bytes(self.exporter.export(ast),'utf-8'))
-        else:
-            output = self.exporter.export(ast)
+        output = self.exporter.export(ast)
 
         self.df = self.df.append([{'id': id, 'AST' : output}], ignore_index=True)
 

@@ -56,8 +56,6 @@ class AstToCodeParser:
             code += f' {operator} '
             code += self.parse_node(ast_item.children[1])
         elif 'UNARY' in self.get_label(ast_item):
-            print(self.get_label(ast_item), operator)
-            print(ast_item.children)
             if 'POST' in self.get_label(ast_item):
                 code += self.parse_node(ast_item.children[0])
                 code += operator
@@ -545,45 +543,36 @@ class AstToCodeParser:
 
 
     def thread_parser(self, file_queue, pbar, output_folder, imports):
-        while True:
-            file_path = file_queue.get()
+        while not file_queue.empty():
+            ast_id, ast = file_queue.get()
 
-            if self.use_compression:
-                with gzip.open(file_path, 'r') as fin:
-                    file = fin.read().decode('utf-8')
-            else:
-                file = open(file_path, 'r').read()
 
-            root = self.importer.import_(file)
+            root = self.importer.import_(ast)
 
-            file_name = file_path.split('/')[-1]
-
-            output =  open(f'{output_folder}{file_name.split(".")[0]}.cpp', 'w')
+            output =  open(f'{output_folder}{ast_id}.cpp', 'w')
                 
-            # try:
-            for child in root.children:
-                output.write(self.parse_node(child))
-            # except Exception as e:
-            #     print(f'File: {file_path} failed: {e}')
-            #     pbar.update()
-            #     file_queue.task_done()
-            #     output.close()
-            #     continue
+            try:
+                for child in root.children:
+                    output.write(self.parse_node(child))
+            except Exception as e:
+                print(f'File: {ast_id} failed: {e}')
+                pbar.update()
+                file_queue.task_done()
+                output.close()
+                continue
 
             output.close()
 
             # print(imports.keys())
 
-            imports_file = imports[int(file_name.split(".")[0])]
+            imports_file = imports[int(ast_id)]
             imports_file = [ele for ele in imports_file[1:-1].split("'") if ele != '' and ele != ', ']
-            # Sort so includes come first (might be needed in usings)
-            imports_file.sort()
 
             # This is not always added but sometimes needed e.g.: std::cout is used in original code but we simply use cout
             if 'using namespace std;' not in imports_file:
                 imports_file.append('using namespace std;')
 
-            add_includes_usings(f'{output_folder}{file_name.split(".")[0]}.cpp', imports_file)
+            add_includes_usings(f'{output_folder}{ast_id}.cpp', imports_file)
             pbar.update()
             file_queue.task_done()
 
@@ -591,39 +580,46 @@ class AstToCodeParser:
     def parse_asts_to_code(self):
         file_paths = []
 
-        for dirs,_,files in os.walk(self.input_folder):
-            # Create folder to save data if it does not exist yet
-            os.makedirs(f'{self.output_folder}{dirs}', exist_ok=True)
-            for f in files:
-                if f.startswith('46717455') and (f.endswith('.json') or f.endswith('.gz')) and f != 'tokens.json' and f!= 'reserved_tokens.json':
-                    file_paths.append(dirs + f)
-        
-        pbar = tqdm(total=len(file_paths))
-        file_queue = queue.Queue(self.processes_num)
+        # Read csv file in chunks (may be very large)
+        asts = pd.read_csv(f'{self.input_folder}asts.csv{".bz2" if self.use_compression else ""}', chunksize=1e2)
 
-        metadata_file = pd.read_csv(self.csv_file_path)
-        metadata_file = metadata_file[['solutionId', 'imports']]
+        # Read metadata file with imports
+        print('loading csv file with imports...')
+        metadata_file = pd.read_csv(self.csv_file_path, usecols=['solutionId', 'imports'])
         metadata_file = metadata_file.set_index('solutionId')
         imports = metadata_file.to_dict()['imports']
+        del metadata_file
 
-
-        try:
-            # List of files with a non-zero return code.
-            for _ in range(self.processes_num):
-                t = threading.Thread(target=self.thread_parser,
-                                    args=(file_queue, pbar, self.output_folder, imports))
-                t.daemon = True
-                t.start()
+        # iterate over the chunks
+        for asts_chunk in asts:
+            # Create progressbar
+            pbar = tqdm(total=len(asts_chunk))
+            # Create file queue to store the program data
+            file_queue = queue.Queue(len(asts_chunk))
 
             # Fill the queue with files.
-            for f in file_paths:
-                file_queue.put(f)
+            for ast in list(asts_chunk.iterrows()):
+                    file_queue.put((ast[1]['id'], ast[1]['AST']))
+        
+            pbar = tqdm(total=len(file_paths))
 
-            # Wait for all threads to be done.
-            file_queue.join()
+            try:
+                threads = []
+                # List of files with a non-zero return code.
+                for _ in range(self.processes_num):
+                    t = threading.Thread(target=self.thread_parser,
+                                        args=(file_queue, pbar, self.output_folder, imports))
+                    t.daemon = True
+                    t.start()
+                    threads.append(t)
 
-        except KeyboardInterrupt:
-            os.kill(0, 9)
+                # Wait for all threads to be done.
+                file_queue.join()
+                for thread in threads:
+                    thread.join() 
+
+            except KeyboardInterrupt:
+                os.kill(0, 9)
 
 
 

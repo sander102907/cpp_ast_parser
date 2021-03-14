@@ -59,6 +59,8 @@ class NodeHandler:
                         parm_declarations = True
 
                     type_node = Node(self.res_tn.get_token('TYPE'), is_reserved=True, parent=parm_decl)
+                    print(child.type.spelling)
+                    print([t.spelling for t in child.get_tokens()])
                     Node(self.tn.get_token(child.type.spelling), is_reserved=False, parent=type_node)
                     declarator = Node(self.res_tn.get_token('DECLARATOR'), is_reserved=True, parent=parm_decl)
                     reference = Node(self.res_tn.get_token('NAME'), is_reserved=True, parent=declarator)
