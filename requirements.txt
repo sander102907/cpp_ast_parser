@@ -1,6 +1,6 @@
 anytree==2.8.0
 clang==11.0
-llvmlite==0.36.0
+llvmlite
 numba
 numpy
 pandas
