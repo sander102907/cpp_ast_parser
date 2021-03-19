@@ -1,7 +1,7 @@
 anytree==2.8.0
 clang==11.0
 llvmlite==0.36.0
-numpy==1.20.1
+numpy
 pandas==1.2.3
 pexpect==4.8.0
 ptyprocess==0.7.0
