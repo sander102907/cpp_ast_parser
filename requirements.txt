@@ -1,10 +1,9 @@
 anytree==2.8.0
 clang==11.0
-fastparquet==0.5.0
-llvmlite==0.36.0
-numba==0.53.0
-numpy==1.20.1
-pandas==1.2.3
+llvmlite
+numba
+numpy
+pandas
 pexpect==4.8.0
 ptyprocess==0.7.0
 python-dateutil==2.8.1
