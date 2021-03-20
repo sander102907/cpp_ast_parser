@@ -27,7 +27,7 @@ item from the language (so not a variable name for example)
 """
 
 class AstParser:
-    def __init__(self, clang_lib_file, csv_file_path, output_folder, use_compression, processes_num):
+    def __init__(self, clang_lib_file, csv_file_path, output_folder, use_compression, processes_num, split_terminals):
         # Try to set a library file for clang
         try:
             clang.cindex.Config.set_library_file(clang_lib_file)
@@ -50,7 +50,7 @@ class AstParser:
         self.tn = Tokenizer(output_folder + 'tokens.json')
 
         # Create node handler object
-        self.nh = NodeHandler(self.res_tn, self.tn)
+        self.nh = NodeHandler(self.res_tn, self.tn, split_terminals)
 
         # Create AST file handler object
         self.ast_file_handler = AstFileHandler(self.output_folder, use_compression)

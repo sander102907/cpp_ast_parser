@@ -32,9 +32,19 @@ def main():
                              help='the input folder with AST json files to parse to code',
                              required=False)
 
+    args_parser.add_argument('-s', '--split_terminals',
+                             metavar='split_terminals',
+                             type=bool,
+                             help="""Split terminal labels to clang defined tokens 
+                                     (e.g. long long int -> [long, long, int]).
+                                     This may greatly reduce the number of unique terminal tokens
+                                     if the dataset is large""",
+                             required=False,
+                             default=True)
+
     args_parser.add_argument('-c', '--use-compression',
                              metavar='use_compression',
-                             type=str,
+                             type=bool,
                              help='Use compression for the ASTs',
                              required=False,
                              default=True)
@@ -76,7 +86,9 @@ def main():
     use_compression = args.use_compression
 
     if parse_method == 'AST':
-        ast_parser = AstParser(libclang_path, csv_file_path, output_folder, use_compression, processes_num)
+        split_terminals = args.split_terminals
+        print(f'Split terminal nodes: {split_terminals}')
+        ast_parser = AstParser(libclang_path, csv_file_path, output_folder, use_compression, processes_num, split_terminals)
         ast_parser.parse_csv()
     elif parse_method == 'code':
         input_folder = args.input_folder

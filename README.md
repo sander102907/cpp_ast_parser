@@ -20,7 +20,7 @@ Running the AST parser will produce the following in the selected output folder:
 It has the following command line interface:
 
 ```
-usage: main.py [-h] -csv csv_file_path -o output_folder [-i input_folder] [-c use_compression] [-l libclang-path] method
+usage: main.py [-h] -csv csv_file_path -o output_folder [-i input_folder] [-s split_terminals] [-c use_compression] [-l libclang-path] [-p processes-number] method
 
 positional arguments:
   method                The parse method: AST or code
@@ -33,10 +33,15 @@ optional arguments:
                         the output folder to the data to
   -i input_folder, --input_folder input_folder
                         the input folder with AST json files to parse to code
+  -s split_terminals, --split_terminals split_terminals
+                        Split terminal labels to clang defined tokens (e.g. long long int -> [long, long, int]). This may greatly reduce the number
+                        of unique terminal tokens if the dataset is large
   -c use_compression, --use-compression use_compression
                         Use compression for the ASTs
   -l libclang-path, --libclang libclang-path
                         path to clang library libclang.so file
+  -p processes-number, --processes_num processes-number
+                        number of parallel processes
 
 ```
 
