@@ -14,6 +14,7 @@ import subprocess
 from tokenizer import Tokenizer
 import gzip
 from AST_file_handler import AstFileHandler
+from datetime import datetime
 
 """
 The AST Parser that can take as input a CSV file containing data of C++ programs:
@@ -63,7 +64,7 @@ class AstParser:
 
     def parse_ast(self, program, imports, thread_nr):
         # Create temp file path for each trhead for clang to save in memory contents
-        temp_file_path = f'tmp{thread_nr}.cpp'
+        temp_file_path = f'{self.output_folder}tmp{thread_nr}.cpp'
 
         # Preprocess the program, expand the macros
         preprocessed_program = self.preprocess_program(program, temp_file_path, imports)
@@ -290,6 +291,7 @@ class AstParser:
                 ast = self.parse_ast(code, imports, thread_nr)
             except Exception as e:
                 print(f'Skipping file due to parsing failing: {program_id} - {e}')
+                pbar.set_description(f'{datetime.now()}')
                 pbar.update()
                 file_queue.task_done()
                 continue
@@ -299,6 +301,7 @@ class AstParser:
 
 
             # Mark as done    
+            pbar.set_description(f'{datetime.now()}')
             pbar.update()
             file_queue.task_done()
 
@@ -332,9 +335,9 @@ class AstParser:
         programs = pd.read_csv(self.csv_file_path, chunksize=1e4)
 
         # iterate over the chunks
-        for programs_chunk in programs:
+        for i, programs_chunk in enumerate(programs):
             # Create progressbar
-            pbar = tqdm(total=len(programs_chunk))
+            pbar = tqdm(total=len(programs_chunk), unit=' program', postfix=f'chunk {i}', colour='green')
             # Create file queue to store the program data
             file_queue = queue.Queue(len(programs_chunk))
 
