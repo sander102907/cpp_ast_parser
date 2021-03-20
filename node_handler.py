@@ -397,8 +397,7 @@ class NodeHandler:
 
 
     "Split the label using the tokens of the ast_item to reduce amount of unique tokenized labels"
-    def get_tokens_label(self, label, ast_item):
-        return self.tn.get_token(label)
+    def create_terminal_nodes(self, label, ast_item, parent_node):
         split_label = []
         for t in [t.spelling for t in ast_item.get_tokens()]:
             if t in label:
@@ -407,4 +406,7 @@ class NodeHandler:
             else:
                 break
 
-        return '|'.join([str(self.tn.get_token(lab)) for lab in split_label])
+        for label in split_label:
+            Node(self.tn.get_token(label), is_reserved=False, parent=parent_node)
+
+        # return '|'.join([str(self.tn.get_token(lab)) for lab in split_label])

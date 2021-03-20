@@ -329,7 +329,7 @@ class AstParser:
         os.makedirs(self.output_folder, exist_ok=True)
 
         # Read csv file in chunks (may be very large)
-        programs = pd.read_csv(self.csv_file_path, chunksize=1e2)
+        programs = pd.read_csv(self.csv_file_path, chunksize=1e4)
 
         # iterate over the chunks
         for programs_chunk in programs:
