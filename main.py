@@ -65,6 +65,14 @@ def main():
                              required=False)
 
 
+    args_parser.add_argument('-m', '--mpi',
+                             metavar='mpi',
+                             type=bool,
+                             help='Run using MPI',
+                             default=False,
+                             required=False)
+
+
     args = args_parser.parse_args()
 
     parse_method = args.method
@@ -79,6 +87,9 @@ def main():
     output_folder = args.output_folder
     print('Output folder: ' + str(output_folder))
 
+    mpi = args.mpi
+    print('MPI: ' + str(mpi))
+
 
 
     libclang_path = args.libclang
@@ -89,7 +100,10 @@ def main():
         split_terminals = args.split_terminals
         print(f'Split terminal nodes: {split_terminals}')
         ast_parser = AstParser(libclang_path, csv_file_path, output_folder, use_compression, processes_num, split_terminals)
-        ast_parser.parse_csv()
+        if mpi:
+            ast_parser.parse_mpi()
+        else:
+            ast_parser.parse_csv()
     elif parse_method == 'code':
         input_folder = args.input_folder
         print('Input folder: ' + str(input_folder))

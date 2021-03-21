@@ -15,6 +15,9 @@ from tokenizer import Tokenizer
 import gzip
 from AST_file_handler import AstFileHandler
 from datetime import datetime
+from mpi4py import MPI
+import math
+
 
 """
 The AST Parser that can take as input a CSV file containing data of C++ programs:
@@ -28,7 +31,8 @@ item from the language (so not a variable name for example)
 """
 
 class AstParser:
-    def __init__(self, clang_lib_file, csv_file_path, output_folder, use_compression, processes_num, split_terminals):
+    def __init__(self, clang_lib_file, csv_file_path, output_folder,
+                 use_compression, processes_num, split_terminals, mpi):
         # Try to set a library file for clang
         try:
             clang.cindex.Config.set_library_file(clang_lib_file)
@@ -61,6 +65,14 @@ class AstParser:
 
         # Number of parallel processes
         self.processes_num = processes_num
+
+        # Boolean to indicate whether we are using MPI
+        self.mpi = mpi
+
+        if mpi:
+            self.comm = MPI.COMM_WORLD
+            self.rank = comm.Get_rank()
+            self.size = comm.Get_size()
 
     def parse_ast(self, program, imports, thread_nr):
         # Create temp file path for each trhead for clang to save in memory contents
@@ -305,9 +317,27 @@ class AstParser:
             pbar.update()
             file_queue.task_done()
 
+
+    def mpi_parser(self, files, process_nr):
+        for file in tqdm(files, postfix=f'process: {process_nr}'):
+            program_id, code, imports = file
+            try:
+                # Parse the AST tree for the program
+                ast = self.parse_ast(code, imports, process_nr)
+            except Exception as e:
+                print(f'Skipping file due to parsing failing: {program_id} - {e}')
+                # pbar.set_description(f'{datetime.now()}')
+                # pbar.update()
+                # file_queue.task_done()
+                continue
+
+            # Write the AST tree to file
+            self.ast_file_handler.add_ast(ast, program_id)
+
+
     def clear_temp_files(self):
         for i in range(self.processes_num):
-            os.remove(f'tmp{i}.cpp')
+            os.remove(f'{self.output_folder}tmp{i}.cpp')
 
 
     def __cleanup(self):
@@ -369,6 +399,45 @@ class AstParser:
                 os.kill(0, 9)
 
         self.__cleanup()
+
+
+    def parse_mpi(self):
+        print('Parsing programs ...')
+
+        # Create output directory if it does not exist yet
+        os.makedirs(self.output_folder, exist_ok=True)
+
+        def get_files():
+            # Read csv file in chunks (may be very large)
+            programs = pd.read_csv(self.csv_file_path, chunksize=1e4)
+
+            files = []
+
+            # iterate over the chunks
+            for i, programs_chunk in enumerate(programs):
+                # Fill the queue with files.
+                for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
+                    # if program[1]['solutionId'] == 104465269:
+                        files.append((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
+
+                return files
+
+        if self.rank == 0:
+            files = get_files()
+            batch_size = len(files)/self.size
+            for i in range(1, self.size):
+                data = files[math.ceil(batch_size * i): math.ceil(batch_size * (i + 1))]
+                self.comm.send(data, dest=i)
+            files = files[:math.ceil(batch_size)]
+        else:
+            files = self.comm.recv(source=0)
+
+        self.mpi_parser(files, rank)
+        self.__cleanup()
+
+        
+
+        
 
 
 
