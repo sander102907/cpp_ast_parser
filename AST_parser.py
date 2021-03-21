@@ -363,7 +363,7 @@ class AstParser:
         for i, programs_chunk in enumerate(programs):
             file_queue = Queue(len(programs_chunk))
             # Fill the queue with files.
-            for index, program in enumerate(list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows())[:8]):
+            for index, program in enumerate(list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows())):
                 # if program[1]['solutionId'] == 104465269:
                     file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
 
