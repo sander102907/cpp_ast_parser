@@ -6,8 +6,7 @@ import utils
 from node_handler import NodeHandler
 from tqdm import tqdm
 import threading
-import multiprocessing
-import queue as queue
+from multiprocessing import Process, Queue, Manager
 import json
 import pandas as pd
 import subprocess
@@ -15,6 +14,7 @@ from tokenizer import Tokenizer
 import gzip
 from AST_file_handler import AstFileHandler
 from datetime import datetime
+import math
 
 """
 The AST Parser that can take as input a CSV file containing data of C++ programs:
@@ -44,17 +44,20 @@ class AstParser:
         # Output folder to save data to
         self.output_folder = output_folder
 
+         # manager
+        self.manager = Manager()
+
         # Create reserved label tokenizer
-        self.res_tn = Tokenizer(output_folder + 'reserved_tokens.json')
+        self.res_tn = Tokenizer(output_folder + 'reserved_tokens.json', self.manager)
 
         # Create non reserved label tokenizer
-        self.tn = Tokenizer(output_folder + 'tokens.json')
+        self.tn = Tokenizer(output_folder + 'tokens.json', self.manager)
 
         # Create node handler object
         self.nh = NodeHandler(self.res_tn, self.tn, split_terminals)
 
         # Create AST file handler object
-        self.ast_file_handler = AstFileHandler(self.output_folder, use_compression)
+        self.ast_file_handler = AstFileHandler(self.output_folder, use_compression, self.manager)
 
         # Boolean whether or not to use compression to save AST files as .gz
         self.use_compression = use_compression
@@ -282,8 +285,8 @@ class AstParser:
                     self.parse_item(child, parent_node, program)
 
 
-    def thread_parser(self, file_queue, pbar, thread_nr):
-        while not file_queue.empty():
+    def thread(self, file_queue, pbar, thread_nr):
+         while not file_queue.empty():
             # Get a program from the queue
             program_id, code, imports = file_queue.get()
             try:
@@ -291,9 +294,9 @@ class AstParser:
                 ast = self.parse_ast(code, imports, thread_nr)
             except Exception as e:
                 print(f'Skipping file due to parsing failing: {program_id} - {e}')
-                pbar.set_description(f'{datetime.now()}')
+                # pbar.set_description(f'{datetime.now()}')
                 pbar.update()
-                file_queue.task_done()
+                # file_queue.task_done()
                 continue
 
             # Write the AST tree to file
@@ -301,13 +304,35 @@ class AstParser:
 
 
             # Mark as done    
-            pbar.set_description(f'{datetime.now()}')
+            # print(f'{thread_nr} completed')
+            # pbar.set_description(f'{datetime.now()}')
             pbar.update()
-            file_queue.task_done()
+            # file_queue.task_done()
+
+
+    def process(self, file_queue, process_nr, items):
+        pbar = tqdm(total=items, unit=' program', postfix=f'chunk', colour='green', position=process_nr)
+        while not file_queue.empty():
+            # Get a program from the queue
+            program_id, code, imports = file_queue.get()
+            try:
+                # Parse the AST tree for the program
+                ast = self.parse_ast(code, imports, process_nr)
+            except Exception as e:
+                print(f'Skipping file due to parsing failing: {program_id} - {e}')
+                pbar.update()
+                continue
+
+            # Write the AST tree to file
+            self.ast_file_handler.add_ast(ast, program_id)
+
+
+            # Mark as done    
+            pbar.update()
 
     def clear_temp_files(self):
         for i in range(self.processes_num):
-            os.remove(f'tmp{i}.cpp')
+            os.remove(f'{self.output_folder}tmp{i}.cpp')
 
 
     def __cleanup(self):
@@ -336,30 +361,24 @@ class AstParser:
 
         # iterate over the chunks
         for i, programs_chunk in enumerate(programs):
-            # Create progressbar
-            pbar = tqdm(total=len(programs_chunk), unit=' program', postfix=f'chunk {i}', colour='green')
-            # Create file queue to store the program data
-            file_queue = queue.Queue(len(programs_chunk))
-
+            file_queue = Queue(len(programs_chunk))
             # Fill the queue with files.
-            for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
+            for index, program in enumerate(list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows())[:8]):
                 # if program[1]['solutionId'] == 104465269:
                     file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
 
             try:
-                threads = []
-                # Create threads which parse ASTs
-                for thread_nr in range(self.processes_num):
-                    t = threading.Thread(target=self.thread_parser,
-                                        args=(file_queue, pbar, thread_nr))
-                    t.daemon = True
-                    t.start()
-                    threads.append(t)
+                # Create processes which parse ASTs
+                processes = []
+                for process_nr in range(self.processes_num):
+                    p = Process(target=self.process,
+                                        args=(file_queue, process_nr, math.ceil(index/self.processes_num)))
+                    p.start()
+                    processes.append(p)
 
-                # Wait for all threads to be done.
-                file_queue.join()    
-                for thread in threads:
-                    thread.join()              
+                # Wait for all processes to be done.
+                for p in processes:
+                    p.join()              
                 self.ast_file_handler.save()
                                 
 

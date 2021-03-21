@@ -2,10 +2,10 @@ import os
 import json
 
 class Tokenizer:
-    def __init__(self, out_path):
+    def __init__(self, out_path, manager):
         self.out_path = out_path
-        self.token_dict = {}
-        self.label_dict = {}
+        self.token_dict = manager.dict()
+        self.label_dict = manager.dict()
 
     def get_token(self, label):
         if label in self.token_dict:
@@ -26,7 +26,7 @@ class Tokenizer:
         if not self.out_path:
             return
 
-        json_f = json.dumps(self.token_dict)
+        json_f = json.dumps(self.token_dict.copy())
         f = open(self.out_path, 'w')
         f.write(json_f)
         f.close()
