@@ -62,9 +62,9 @@ class AstParser:
         # Number of parallel processes
         self.processes_num = processes_num
 
-    def parse_ast(self, program, imports, thread_nr):
+    def parse_ast(self, program, lang, imports, thread_nr):
         # Create temp file path for each trhead for clang to save in memory contents
-        temp_file_path = f'{self.output_folder}tmp{thread_nr}.cpp'
+        temp_file_path = f'{self.output_folder}tmp{thread_nr}.{lang}'
 
         # Preprocess the program, expand the macros
         preprocessed_program = self.preprocess_program(program, temp_file_path, imports)
@@ -73,7 +73,7 @@ class AstParser:
         tu = self.index.parse(
                             temp_file_path,
                             unsaved_files=[(temp_file_path, preprocessed_program)],
-                            args=['-x', 'c++', '-std=c++17', '-fpreprocessed'],
+                            args=['-x', lang, '-std=c++17', '-fpreprocessed'],
                             options=0)
 
         # Retrieve only the cursor items (children) that contain the program code (no import code)
@@ -108,12 +108,15 @@ class AstParser:
 
     def preprocess_program(self, program, temp_file_path, imports):
         # Create a temporary file to store program in
-        temp_file = open(temp_file_path, 'w')
+        temp_file = open(temp_file_path, 'w', encoding='utf8')
         temp_file.write(program)
         temp_file.close()
 
         # Call preprocess g++ function to expand the macros (need this to get operator tokens)
-        preprocessed_program = subprocess.check_output(['g++', '-x', 'c++', '-E', temp_file_path]).decode()
+        try:
+            preprocessed_program = subprocess.check_output(['g++', '-E', temp_file_path]).decode()
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
 
         # Only retrieve the actual original code from the program not all the includes
         program_lines = preprocessed_program.split('\n')
@@ -332,7 +335,7 @@ class AstParser:
         os.makedirs(self.output_folder, exist_ok=True)
 
         # Read csv file in chunks (may be very large)
-        programs = pd.read_csv(self.csv_file_path, chunksize=1e4)
+        programs = pd.read_csv(self.csv_file_path, chunksize=1e4, encoding='utf-8')
 
         # iterate over the chunks
         for i, programs_chunk in enumerate(programs):
@@ -342,9 +345,9 @@ class AstParser:
             file_queue = queue.Queue(len(programs_chunk))
 
             # Fill the queue with files.
-            for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
+            for program in list(programs_chunk[['funcId', 'func', 'lang', 'imports']].iterrows()):
                 # if program[1]['solutionId'] == 104465269:
-                    file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
+                    file_queue.put((program[1]['funcId'], program[1]['func'], program[1]['lang'], program[1]['imports']))
 
             try:
                 threads = []
