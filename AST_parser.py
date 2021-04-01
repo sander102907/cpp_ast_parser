@@ -17,6 +17,8 @@ from AST_file_handler import AstFileHandler
 from datetime import datetime
 from mpi4py import MPI
 import math
+import ccsyspath
+
 
 
 """
@@ -91,11 +93,17 @@ class AstParser:
         # Preprocess the program, expand the macros
         preprocessed_program = self.preprocess_program(program, temp_file_path, imports)
 
+        # Set arguments and add compiler system include paths (with ccsyspath)
+        args    = '-x c++ --std=c++20'.split()
+        syspath = ccsyspath.system_include_paths('clang++')
+        incargs = [ b'-I' + inc for inc in syspath ]
+        args    = args + incargs
+
         # Parse the program to a clang AST
         tu = self.index.parse(
                             temp_file_path,
                             unsaved_files=[(temp_file_path, preprocessed_program)],
-                            args=['-x', 'c++', '-std=c++17', '-fpreprocessed'],
+                            args=args,
                             options=0)
 
         # Retrieve only the cursor items (children) that contain the program code (no import code)
