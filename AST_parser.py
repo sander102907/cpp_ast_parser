@@ -28,7 +28,7 @@ item from the language (so not a variable name for example)
 """
 
 class AstParser:
-    def __init__(self, clang_lib_file, csv_file_path, output_folder, use_compression, processes_num, split_terminals):
+    def __init__(self, clang_lib_file, csv_file_path, output_folder, use_compression, processes_num, split_terminals, tokenized):
         # Try to set a library file for clang
         try:
             clang.cindex.Config.set_library_file(clang_lib_file)
@@ -45,10 +45,10 @@ class AstParser:
         self.output_folder = output_folder
 
         # Create reserved label tokenizer
-        self.res_tn = Tokenizer(output_folder + 'reserved_tokens.json')
+        self.res_tn = Tokenizer(output_folder + 'reserved_tokens.json', tokenized)
 
         # Create non reserved label tokenizer
-        self.tn = Tokenizer(output_folder + 'tokens.json')
+        self.tn = Tokenizer(output_folder + 'tokens.json', tokenized)
 
         # Create node handler object
         self.nh = NodeHandler(self.res_tn, self.tn, split_terminals)
@@ -182,17 +182,14 @@ class AstParser:
             p_node = self.nh.handle_reference(ast_item, parent_node)
 
             if p_node:
-                parent_node = p_node
-        
+                parent_node = p_node                    
 
         # parse type ref
         elif ast_item.kind == CursorKind.TYPE_REF \
-            and parent_node and self.res_tn.get_label(parent_node.token) != 'root' \
-            and self.res_tn.get_label(parent_node.token) != 'DECLARATOR' \
-            and self.res_tn.get_label(parent_node.token) != 'FUNCTION_DECL'\
-            and self.res_tn.get_label(parent_node.token) != 'FUNCTION_TEMPLATE'\
-            and self.res_tn.get_label(parent_node.token != 'ARGUMENTS')\
-            and self.res_tn.get_label(parent_node.token) != 'CXX_FUNCTIONAL_CAST_EXPR':
+            and parent_node\
+            and self.res_tn.get_label(parent_node.token) not in ['root', 'DECLARATOR',
+            'FUNCTION_DECL', 'FUNCTION_TEMPLATE', 'ARGUMENTS',
+            'CXX_FUNCTIONAL_CAST_EXPR']:
             self.nh.handle_type_ref(ast_item, parent_node)
 
         # Parse for range -> for(int a:v) {...}
@@ -343,7 +340,7 @@ class AstParser:
 
             # Fill the queue with files.
             for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
-                # if program[1]['solutionId'] == 104465269:
+                # if program[1]['solutionId'] == 44591039:
                     file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
 
             try:

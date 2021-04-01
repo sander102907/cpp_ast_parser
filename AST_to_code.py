@@ -14,7 +14,7 @@ from tokenizer import Tokenizer
 import gzip
 
 class AstToCodeParser:
-    def __init__(self, input_folder, output_folder, csv_file_path, use_compression, processes_num):
+    def __init__(self, input_folder, output_folder, csv_file_path, use_compression, processes_num, tokenized):
          # CSV to get program data from
         self.csv_file_path = csv_file_path
 
@@ -24,13 +24,16 @@ class AstToCodeParser:
         # Input folder to get ASTs and tokens from
         self.input_folder = input_folder
 
-        # Create reserved label tokenizer
-        self.res_tn = Tokenizer(output_folder)
-        self.res_tn.load(input_folder + 'reserved_tokens.json')
+        self.tokenized = tokenized
 
-        # Create non reserved label tokenizer
-        self.tn = Tokenizer(output_folder)
-        self.tn.load(input_folder + 'tokens.json')
+        if tokenized:
+            # Create reserved label tokenizer
+            self.res_tn = Tokenizer(output_folder)
+            self.res_tn.load(input_folder + 'reserved_tokens.json')
+
+            # Create non reserved label tokenizer
+            self.tn = Tokenizer(output_folder)
+            self.tn.load(input_folder + 'tokens.json')
 
         # Create JSON importer
         self.importer = JsonImporter()
@@ -43,10 +46,16 @@ class AstToCodeParser:
 
 
     def get_label(self, node):
-        if node.res:
-            return self.res_tn.get_label(node.token)
+        if self.tokenized:
+            if node.res:
+                return self.res_tn.get_label(node.token)
+            else:
+                return self.tn.get_label(node.token)
         else:
-            return self.tn.get_label(node.token)
+            return node.token
+
+    def merge_terminals(self, terminals):
+        return ' '.join([self.get_label(term) for term in terminals])
 
     def get_operator(self, ast_item):
         operator = self.get_label(ast_item).split('_')[-1]
@@ -124,18 +133,19 @@ class AstToCodeParser:
             if self.get_label(child) == 'TYPE' and \
             not (self.get_label(ast_item.parent) == 'DECL_STMT' \
                 and ast_item != ast_item.parent.children[0]):
-                    var_type += self.get_label(child.children[0])
+                    var_type += self.merge_terminals(child.children)
             # if declaration statement and not the first child, get the possible dimensions -> [2][3]
             elif self.get_label(child) == 'TYPE':
-                var_type += ''.join(re.findall(r'\[.*\]', self.get_label(child.children[0])))                
+                self.merge_terminals(child.children)
+                var_type += ''.join(re.findall(r'\[.*\]', self.merge_terminals(child.children)))                
             elif self.get_label(child) == 'DECLARATOR':
                 for decl_child in child.children:
                     if self.get_label(decl_child) == 'NAME':
-                        var_name = self.get_label(decl_child.children[0])
+                        var_name = self.merge_terminals(decl_child.children)
                     else:
                         declarations.append(self.parse_node(decl_child))
             elif self.get_label(child) == 'ACCESS_SPECIFIER':
-                acc_spec += f'{self.get_label(child.children[0]).lower()}:\n'
+                acc_spec += f'{self.merge_terminals(child.children).lower()}:\n'
 
 
         # get ref dims from type so e.g. int x[50][20] -> ['[50]', '[20]']
@@ -186,7 +196,7 @@ class AstToCodeParser:
             elif self.get_label(child) == 'PARM_DECL':
                 params.append(self.get_var_decl(child))
             elif self.get_label(child) == 'NAME':
-                func_name = self.get_label(child.children[0])
+                func_name = self.merge_terminals(child.children)
             elif self.get_label(child) == 'ACCESS_SPECIFIER':
                 acc_spec += f'{self.get_label(child.children[0]).lower()}:\n'
             elif self.get_label(child) == 'CONST':
@@ -223,7 +233,7 @@ class AstToCodeParser:
 
         for child in ast_item.children:
             if self.get_label(child) == 'CAPTURE_CLAUSE':
-                capture_clauses.append(self.get_label(child.children[0]))
+                capture_clauses.append(self.merge_terminals(child.children))
             elif self.get_label(child) == 'PARM_DECL':
                 params.append(self.get_var_decl(child))
 
@@ -344,7 +354,7 @@ class AstToCodeParser:
 
                 for child in node.children:
                     if self.get_label(child) == 'NAME':
-                        code += self.get_label(child.children[0]) + '('
+                        code += self.merge_terminals(child.children) + '('
                     elif self.get_label(child) == 'ARGUMENTS':
                         for index, arg in enumerate(child.children):
                             code += self.parse_node(arg)
@@ -355,7 +365,7 @@ class AstToCodeParser:
         elif self.get_label(node) == 'TYPEDEF_DECL':
             for child in node.children:
                 if self.get_label(child) == 'TYPE_DEF':
-                    code += f'typedef {self.get_label(child.children[0])} '
+                    code += f'typedef {self.merge_terminals(child.children)} '
                 elif self.get_label(child) == 'IDENTIFIER':
                     code += self.get_label(child.children[0])
 
@@ -374,7 +384,7 @@ class AstToCodeParser:
             code += 'class '
             for child in node.children:
                 if self.get_label(child) == 'NAME':
-                    code += self.get_label(child.children[0])
+                    code += self.merge_terminals(child.children)
                 else:
                     code += self.parse_node(child)
 
@@ -382,7 +392,7 @@ class AstToCodeParser:
             code += 'struct '
             for child in node.children:
                 if self.get_label(child) == 'NAME':
-                    code += self.get_label(child.children[0])
+                    code += self.merge_terminals(child.children)
                 else:
                     code += self.parse_node(child)
 
@@ -581,7 +591,7 @@ class AstToCodeParser:
         file_paths = []
 
         # Read csv file in chunks (may be very large)
-        asts = pd.read_csv(f'{self.input_folder}asts.csv{".bz2" if self.use_compression else ""}', chunksize=1e2)
+        asts = pd.read_csv(f'{self.input_folder}asts.csv{".bz2" if self.use_compression else ""}', chunksize=1e5)
 
         # Read metadata file with imports
         print('loading csv file with imports...')
