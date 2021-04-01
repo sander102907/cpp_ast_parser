@@ -451,7 +451,7 @@ class AstParser:
                 files = self.comm.recv(source=0)
 
             self.mpi_parser(files, self.rank)
-        self.__cleanup()
+            self.__cleanup()
 
         
 
