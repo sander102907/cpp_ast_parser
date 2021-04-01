@@ -15,6 +15,7 @@ from tokenizer import Tokenizer
 import gzip
 from AST_file_handler import AstFileHandler
 from datetime import datetime
+import ccsyspath
 
 """
 The AST Parser that can take as input a CSV file containing data of C++ programs:
@@ -63,19 +64,23 @@ class AstParser:
         self.processes_num = processes_num
 
     def parse_ast(self, program, imports, thread_nr):
-        program = open('test.cpp').read()
-
         # Create temp file path for each trhead for clang to save in memory contents
         temp_file_path = f'{self.output_folder}tmp{thread_nr}.cpp'
 
         # Preprocess the program, expand the macros
         preprocessed_program = self.preprocess_program(program, temp_file_path, imports)
 
+        # Set arguments and add compiler system include paths (with ccsyspath)
+        args    = '-x c++ --std=c++20'.split()
+        syspath = ccsyspath.system_include_paths('clang++')
+        incargs = [ b'-I' + inc for inc in syspath ]
+        args    = args + incargs
+
         # Parse the program to a clang AST
         tu = self.index.parse(
                             temp_file_path,
                             unsaved_files=[(temp_file_path, preprocessed_program)],
-                            args=['-x', 'c++', '-std=c++17', '-fpreprocessed'],
+                            args=args,
                             options=0)
 
         # Retrieve only the cursor items (children) that contain the program code (no import code)
@@ -344,7 +349,6 @@ class AstParser:
             for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
                 # if program[1]['solutionId'] == 44591039:
                     file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
-                    break
 
             try:
                 threads = []
