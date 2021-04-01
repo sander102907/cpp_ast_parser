@@ -244,12 +244,15 @@ class NodeHandler:
             or (ast_item.referenced and ast_item.referenced.kind == CursorKind.CONSTRUCTOR and len(list(ast_item.get_children())) > 0):
                 # Do not call expressions with const before it
                 item_type = ast_item.type.spelling.replace('const', '')
-                self.create_terminal_nodes(item_type, ast_item, ref)
+
+                # In special call expr the declaration tokens clang provides will not be correct
+                # so we manually get them
+                tokens = [self.tn.get_label(t.token) for t in parent_node.parent.children[0].children]
+                self.create_terminal_nodes(item_type, ast_item, ref, tokens)
                 # Node(self.tn.get_token(item_type), is_reserved=False, parent=ref)
                 return Node(self.res_tn.get_token('ARGUMENTS'), is_reserved=True, parent=func_call)
             else:
                 Node(self.tn.get_token(func_name), is_reserved=False, parent=ref)
-
 
             if '::' in [t.spelling for t in ast_item.get_tokens()]:
 
@@ -269,6 +272,7 @@ class NodeHandler:
                         else:
                             type_ref += token.spelling
 
+
                     type_ref_node = Node(self.res_tn.get_token('TYPE_REF'), is_reserved=True, parent=func_call)
                     self.create_terminal_nodes(type_ref, ast_item, type_ref_node)
                     # Node(self.tn.get_token(type_ref), is_reserved=False, parent=type_ref_node)
@@ -285,9 +289,9 @@ class NodeHandler:
                                 if self.res_tn.get_label(n.token) == 'NAME' and self.res_tn.get_label(parent_node.token) != 'DECLARATOR']
         else:
             parent_func_name = []
+
         if ast_item.spelling \
         and ast_item.spelling not in parent_func_name:
-
 
             reference = Node(self.res_tn.get_token(ast_item.kind.name), True, parent=parent_node)
             return Node(self.tn.get_token(ast_item.spelling), False, parent=reference)
@@ -295,8 +299,8 @@ class NodeHandler:
 
     def handle_type_ref(self, ast_item, parent_node):
         type_ref = Node(self.res_tn.get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
-        self.create_terminal_nodes(ast_item.type.spelling, ast_item, type_ref)
-        # Node(self.tn.get_token(ast_item.type.spelling), is_reserved=False, parent=type_ref)
+        # self.create_terminal_nodes(ast_item.type.spelling, ast_item, type_ref)
+        Node(self.tn.get_token(ast_item.type.spelling), is_reserved=False, parent=type_ref)
 
     def handle_for_range(self, ast_item, parent_node):
         stmt = Node(self.res_tn.get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
@@ -400,15 +404,32 @@ class NodeHandler:
     # Create terminal nodes with the possibility to split the terminal labels by clang defined tokens
     # e.g. "long long int" -> ["long", "long", "int"]
     # To greatly reduce the numbe of unique terminal tokens if the dataset is large
-    def create_terminal_nodes(self, label, ast_item, parent_node):
+    def create_terminal_nodes(self, label, ast_item, parent_node, tokens=None):
         if self.split_terminals:
-            split_label = []
-            for t in [t.spelling for t in ast_item.get_tokens()]:
-                if t in label:
-                    label = label.replace(t, '', 1)
-                    split_label.append(t)
-                else:
-                    break
+            # Splilt label by: '[', ']', '<', '>', ' ', '::'
+            split_label = [el for el in re.split('(\[|\]|<|>| |::)', label) if len(el.strip()) > 0]
+            # split_label = []
+            # for t in tokens if tokens is not None else [tok.spelling for tok in ast_item.get_tokens()]:
+            #     if t in label:
+            #         # Might be tokens not in the token list we would still like to add
+            #         # Example: say we have code int[maxN] where maxN = 1, we get type int[1],
+            #         # but 1 is not in tokens, instead maxN is, we still like to add the 1.
+            #         if not label.strip().startswith(t):
+            #             pre_token = label.split(t)[0].strip()
+            #             label = label.replace(pre_token, '', 1)
+            #             split_label.append(pre_token)
+            #         label = label.replace(t, '', 1)
+            #         split_label.append(t)
+                
+            #     if len(label.strip()) == 0:
+            #         break
+
+            # # Add any leftover label -> int n,m for VAR DECL of m the type will be int,
+            # #  but the tokens will not contain this int, we would still like to add it.
+            # if len(label.strip()) > 0:
+            #     split_label.append(label.strip())
+
+            # print(split_label, tokens)
 
             for label in split_label:
                 Node(self.tn.get_token(label), is_reserved=False, parent=parent_node)

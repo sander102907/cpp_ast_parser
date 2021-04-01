@@ -42,6 +42,17 @@ def main():
                              required=False,
                              default=True)
 
+    args_parser.add_argument('-t', '--tokenized',
+                             metavar='tokenized',
+                             type=bool,
+                             help="""Tokenize labels: map labels to integer values. For AST parsing, 
+                             the AST tokens will be replaced with the mapped integer values. For AST to code,
+                             the tokenized JSON maps will be used for detokenizing to code. If tokenizing is not used,
+                             the number of occurences of each label will simply be counted instead. Note that tokenizing
+                             will not function properly if the script is run in parallel.""",
+                             required=False,
+                             default=False)
+
     args_parser.add_argument('-c', '--use-compression',
                              metavar='use_compression',
                              type=bool,
@@ -91,6 +102,8 @@ def main():
     print('MPI: ' + str(mpi))
 
 
+    tokenized = args.tokenized
+    print('Tokenized: ' + str(tokenized))
 
     libclang_path = args.libclang
 
@@ -99,7 +112,7 @@ def main():
     if parse_method == 'AST':
         split_terminals = args.split_terminals
         print(f'Split terminal nodes: {split_terminals}')
-        ast_parser = AstParser(libclang_path, csv_file_path, output_folder, use_compression, processes_num, split_terminals)
+        ast_parser = AstParser(libclang_path, csv_file_path, output_folder, use_compression, processes_num, split_terminals, tokenized, mpi)
         if mpi:
             ast_parser.parse_mpi()
         else:
@@ -107,7 +120,7 @@ def main():
     elif parse_method == 'code':
         input_folder = args.input_folder
         print('Input folder: ' + str(input_folder))
-        ast_to_code_parser = AstToCodeParser(input_folder, output_folder, csv_file_path, use_compression, processes_num)
+        ast_to_code_parser = AstToCodeParser(input_folder, output_folder, csv_file_path, use_compression, processes_num, tokenized)
         ast_to_code_parser.parse_asts_to_code()
     else:
         print('Please choose a valid method: AST or code')

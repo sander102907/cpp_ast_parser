@@ -31,8 +31,7 @@ item from the language (so not a variable name for example)
 """
 
 class AstParser:
-    def __init__(self, clang_lib_file, csv_file_path, output_folder,
-                 use_compression, processes_num, split_terminals, mpi):
+    def __init__(self, clang_lib_file, csv_file_path, output_folder, use_compression, processes_num, split_terminals, tokenized, mpi):
         # Try to set a library file for clang
         try:
             clang.cindex.Config.set_library_file(clang_lib_file)
@@ -48,15 +47,6 @@ class AstParser:
         # Output folder to save data to
         self.output_folder = output_folder
 
-        # Create reserved label tokenizer
-        self.res_tn = Tokenizer(output_folder + 'reserved_tokens.json')
-
-        # Create non reserved label tokenizer
-        self.tn = Tokenizer(output_folder + 'tokens.json')
-
-        # Create node handler object
-        self.nh = NodeHandler(self.res_tn, self.tn, split_terminals)
-
         # Create AST file handler object
         self.ast_file_handler = AstFileHandler(self.output_folder, use_compression)
 
@@ -71,8 +61,28 @@ class AstParser:
 
         if mpi:
             self.comm = MPI.COMM_WORLD
-            self.rank = comm.Get_rank()
-            self.size = comm.Get_size()
+            self.rank = self.comm.Get_rank()
+            self.size = self.comm.Get_size()
+
+            # Create reserved label tokenizer
+            self.res_tn = Tokenizer(output_folder + f'reserved_tokens_{self.rank}.json', tokenized)
+
+            # Create non reserved label tokenizer
+            self.tn = Tokenizer(output_folder + f'tokens_{self.rank}.json', tokenized)
+
+            self.ast_file_handler = AstFileHandler(self.output_folder, use_compression, self.rank)
+        else:
+            # Create reserved label tokenizer
+            self.res_tn = Tokenizer(output_folder + 'reserved_tokens.json', tokenized)
+
+            # Create non reserved label tokenizer
+            self.tn = Tokenizer(output_folder + 'tokens.json', tokenized)
+
+            self.ast_file_handler = AstFileHandler(self.output_folder, use_compression)
+
+
+        # Create node handler object
+        self.nh = NodeHandler(self.res_tn, self.tn, split_terminals)
 
     def parse_ast(self, program, imports, thread_nr):
         # Create temp file path for each trhead for clang to save in memory contents
@@ -194,17 +204,14 @@ class AstParser:
             p_node = self.nh.handle_reference(ast_item, parent_node)
 
             if p_node:
-                parent_node = p_node
-        
+                parent_node = p_node                    
 
         # parse type ref
         elif ast_item.kind == CursorKind.TYPE_REF \
-            and parent_node and self.res_tn.get_label(parent_node.token) != 'root' \
-            and self.res_tn.get_label(parent_node.token) != 'DECLARATOR' \
-            and self.res_tn.get_label(parent_node.token) != 'FUNCTION_DECL'\
-            and self.res_tn.get_label(parent_node.token) != 'FUNCTION_TEMPLATE'\
-            and self.res_tn.get_label(parent_node.token != 'ARGUMENTS')\
-            and self.res_tn.get_label(parent_node.token) != 'CXX_FUNCTIONAL_CAST_EXPR':
+            and parent_node\
+            and self.res_tn.get_label(parent_node.token) not in ['root', 'DECLARATOR',
+            'FUNCTION_DECL', 'FUNCTION_TEMPLATE', 'ARGUMENTS',
+            'CXX_FUNCTIONAL_CAST_EXPR']:
             self.nh.handle_type_ref(ast_item, parent_node)
 
         # Parse for range -> for(int a:v) {...}
@@ -336,8 +343,11 @@ class AstParser:
 
 
     def clear_temp_files(self):
-        for i in range(self.processes_num):
-            os.remove(f'{self.output_folder}tmp{i}.cpp')
+        if self.mpi:
+            os.remove(f'{self.output_folder}tmp{self.rank}.cpp')
+        else:
+            for i in range(self.processes_num):
+                os.remove(f'{self.output_folder}tmp{i}.cpp')
 
 
     def __cleanup(self):
@@ -373,7 +383,7 @@ class AstParser:
 
             # Fill the queue with files.
             for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
-                # if program[1]['solutionId'] == 104465269:
+                # if program[1]['solutionId'] == 44591039:
                     file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
 
             try:
@@ -432,7 +442,7 @@ class AstParser:
         else:
             files = self.comm.recv(source=0)
 
-        self.mpi_parser(files, rank)
+        self.mpi_parser(files, self.rank)
         self.__cleanup()
 
         

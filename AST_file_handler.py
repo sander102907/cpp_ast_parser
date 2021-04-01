@@ -6,11 +6,12 @@ import sys
 from io import BytesIO
 
 class AstFileHandler:
-    def __init__(self, output_folder, use_compression):
+    def __init__(self, output_folder, use_compression, process_nr=0):
         self.output_folder = output_folder
         self.use_compression = use_compression
         self.df = pd.DataFrame(columns=['id', 'AST'])
         self.first_save = True
+        self.process_nr = process_nr
         
         # Create exporter to export the tree to JSON format
         self.exporter = JsonExporter(indent=2)
@@ -26,12 +27,12 @@ class AstFileHandler:
     def save(self):
         if self.first_save:
             self.df.to_csv(
-                f'{self.output_folder}asts.csv{".bz2" if self.use_compression else ""}',
+                f'{self.output_folder}asts{self.process_nr}.csv{".bz2" if self.use_compression else ""}',
                 index=False)
             self.first_save = False
         else:
             self.df.to_csv(
-                f'{self.output_folder}asts.csv{".bz2" if self.use_compression else ""}',
+                f'{self.output_folder}asts{self.process_nr}.csv{".bz2" if self.use_compression else ""}',
                 header=False, 
                 index=False, 
                 mode='a')
