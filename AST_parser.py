@@ -425,32 +425,32 @@ class AstParser:
         # Create output directory if it does not exist yet
         os.makedirs(self.output_folder, exist_ok=True)
 
-        def get_files():
-            # Read csv file in chunks (may be very large)
-            programs = pd.read_csv(self.csv_file_path, chunksize=1e4)
+        # Read csv file in chunks (may be very large)
+        programs = pd.read_csv(self.csv_file_path, chunksize=1e2)
 
+        def get_files():
             files = []
 
-            # iterate over the chunks
-            for i, programs_chunk in enumerate(programs):
-                # Fill the queue with files.
-                for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
-                    # if program[1]['solutionId'] == 104465269:
-                        files.append((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
+            # Fill the queue with files.
+            for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
+                # if program[1]['solutionId'] == 104465269:
+                    files.append((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
 
-                return files
+            return files
 
-        if self.rank == 0:
-            files = get_files()
-            batch_size = len(files)/self.size
-            for i in range(1, self.size):
-                data = files[math.ceil(batch_size * i): math.ceil(batch_size * (i + 1))]
-                self.comm.send(data, dest=i)
-            files = files[:math.ceil(batch_size)]
-        else:
-            files = self.comm.recv(source=0)
+        # iterate over the chunks
+        for programs_chunk in programs:
+            if self.rank == 0:
+                files = get_files()
+                batch_size = len(files)/self.size
+                for i in range(1, self.size):
+                    data = files[math.ceil(batch_size * i): math.ceil(batch_size * (i + 1))]
+                    self.comm.send(data, dest=i)
+                files = files[:math.ceil(batch_size)]
+            else:
+                files = self.comm.recv(source=0)
 
-        self.mpi_parser(files, self.rank)
+            self.mpi_parser(files, self.rank)
         self.__cleanup()
 
         
