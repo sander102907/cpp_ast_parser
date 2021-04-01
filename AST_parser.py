@@ -63,6 +63,8 @@ class AstParser:
         self.processes_num = processes_num
 
     def parse_ast(self, program, imports, thread_nr):
+        program = open('test.cpp').read()
+
         # Create temp file path for each trhead for clang to save in memory contents
         temp_file_path = f'{self.output_folder}tmp{thread_nr}.cpp'
 
@@ -342,6 +344,7 @@ class AstParser:
             for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
                 # if program[1]['solutionId'] == 44591039:
                     file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
+                    break
 
             try:
                 threads = []
