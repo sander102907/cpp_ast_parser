@@ -407,7 +407,7 @@ class NodeHandler:
     def create_terminal_nodes(self, label, ast_item, parent_node, tokens=None):
         if self.split_terminals:
             # Splilt label by: '[', ']', '<', '>', ' ', '::'
-            split_label = [el for el in re.split('(\[|\]|<|>| |::)', label) if len(el.strip()) > 0]
+            split_label = [el for el in re.split('(\[|\]|<|>| |::|,)', label) if len(el.strip()) > 0]
             # split_label = []
             # for t in tokens if tokens is not None else [tok.spelling for tok in ast_item.get_tokens()]:
             #     if t in label:
