@@ -18,8 +18,9 @@ from datetime import datetime
 
 """
 The AST Parser that can take as input a CSV file containing data of C++ programs:
-- Name/ID (solutionId)
-- Code (solution)
+- Name/ID (funcId)
+- Code (func)
+- Programming language (lang)
 - Imports -> includes and usings (imports)
 
 Output for each program in the CSV file an AST in JSON format, where each node contains a label
@@ -65,15 +66,15 @@ class AstParser:
     def parse_ast(self, program, lang, imports, thread_nr):
         # Create temp file path for each trhead for clang to save in memory contents
         temp_file_path = f'{self.output_folder}tmp{thread_nr}.{lang}'
-
+        print(f"parse_ast thread: {thread_nr}")
         # Preprocess the program, expand the macros
-        preprocessed_program = self.preprocess_program(program, temp_file_path, imports)
+        preprocessed_program = self.preprocess_program(program, lang, temp_file_path, imports, thread_nr)
 
         # Parse the program to a clang AST
         tu = self.index.parse(
                             temp_file_path,
                             unsaved_files=[(temp_file_path, preprocessed_program)],
-                            args=['-x', lang, '-std=c++17', '-fpreprocessed'],
+                            args=['-x', 'c++', '-std=c++17', '-fpreprocessed'],
                             options=0)
 
         # Retrieve only the cursor items (children) that contain the program code (no import code)
@@ -82,14 +83,13 @@ class AstParser:
         # Create a root node
         root_node = Node(self.res_tn.get_token('root'), is_reserved=True)
 
-        # for cursor_item in cursor_items:
-        #     for c in cursor_item.walk_preorder():
-        #         print(f'spelling: {c.spelling}, kind: {c.kind.name}, type spelling: {c.type.spelling}, return type: {c.type.get_result().spelling}, type kind: {c.type.kind}')
+        #for cursor_item in cursor_items:
+        #    for c in cursor_item.walk_preorder():
+        #        print(f'spelling: {c.spelling}, kind: {c.kind.name}, type spelling: {c.type.spelling}, return type: {c.type.get_result().spelling}, type kind: {c.type.kind}')
 
         # Parse each cursor item
         for cursor_item in cursor_items:
             self.parse_item(cursor_item, root_node, program)
-
 
         # Return the root node filled with children to form the AST
         return root_node
@@ -106,17 +106,16 @@ class AstParser:
 
         return cursor_items
 
-    def preprocess_program(self, program, temp_file_path, imports):
+    def preprocess_program(self, program, lang, temp_file_path, imports, thread_nr):
         # Create a temporary file to store program in
         temp_file = open(temp_file_path, 'w', encoding='utf8')
         temp_file.write(program)
         temp_file.close()
-
+        print(f"before subprocess: {thread_nr}")
         # Call preprocess g++ function to expand the macros (need this to get operator tokens)
-        try:
-            preprocessed_program = subprocess.check_output(['g++', '-E', temp_file_path]).decode()
-        except subprocess.CalledProcessError as e:
-            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+        preprocessed_program = subprocess.check_output(['g++', '-x', 'c++', '-E', temp_file_path]).decode()
+
+        print(f"after subprocess: {thread_nr}")
 
         # Only retrieve the actual original code from the program not all the includes
         program_lines = preprocessed_program.split('\n')
@@ -242,7 +241,7 @@ class AstParser:
                 else:
                     self.parse_item(child, parent_node, program)
 
-        # Handle one liner if/while statements with no compound statement (={..}) as children -> if (...) return x; ADD COMPOUND STATEMENT ANYWAY
+        # Handle one linear if/while statements with no compound statement (={..}) as children -> if (...) return x; ADD COMPOUND STATEMENT ANYWAY
         elif (ast_item.kind == CursorKind.IF_STMT or ast_item.kind == CursorKind.WHILE_STMT)\
              and any(CursorKind.COMPOUND_STMT != child.kind for child in list(ast_item.get_children())[1:]):
             for index, child in enumerate(ast_item.get_children()):
@@ -288,10 +287,11 @@ class AstParser:
     def thread_parser(self, file_queue, pbar, thread_nr):
         while not file_queue.empty():
             # Get a program from the queue
-            program_id, code, imports = file_queue.get()
+            program_id, code, lang, imports = file_queue.get()
+
             try:
                 # Parse the AST tree for the program
-                ast = self.parse_ast(code, imports, thread_nr)
+                ast = self.parse_ast(code, lang, imports, thread_nr)
             except Exception as e:
                 print(f'Skipping file due to parsing failing: {program_id} - {e}')
                 pbar.set_description(f'{datetime.now()}')
@@ -301,7 +301,6 @@ class AstParser:
 
             # Write the AST tree to file
             self.ast_file_handler.add_ast(ast, program_id)
-
 
             # Mark as done    
             pbar.set_description(f'{datetime.now()}')
@@ -352,7 +351,7 @@ class AstParser:
             try:
                 threads = []
                 # Create threads which parse ASTs
-                for thread_nr in range(self.processes_num):
+                for thread_nr in range(6):#self.processes_num
                     t = threading.Thread(target=self.thread_parser,
                                         args=(file_queue, pbar, thread_nr))
                     t.daemon = True
@@ -360,12 +359,11 @@ class AstParser:
                     threads.append(t)
 
                 # Wait for all threads to be done.
-                file_queue.join()    
+                file_queue.join()
                 for thread in threads:
-                    thread.join()              
-                self.ast_file_handler.save()
-                                
+                    thread.join()
 
+                self.ast_file_handler.save()
             # Exit program with keyboard interrupt
             except KeyboardInterrupt:
                 self.__cleanup()
