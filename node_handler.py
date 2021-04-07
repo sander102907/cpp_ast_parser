@@ -294,7 +294,9 @@ class NodeHandler:
         and ast_item.spelling not in parent_func_name:
 
             reference = Node(self.res_tn.get_token(ast_item.kind.name), True, parent=parent_node)
-            return Node(self.tn.get_token(ast_item.spelling), False, parent=reference)
+            Node(self.tn.get_token(ast_item.spelling), False, parent=reference)
+
+            return reference
 
 
     def handle_type_ref(self, ast_item, parent_node):
