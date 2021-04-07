@@ -294,7 +294,9 @@ class NodeHandler:
         and ast_item.spelling not in parent_func_name:
 
             reference = Node(self.res_tn.get_token(ast_item.kind.name), True, parent=parent_node)
-            return Node(self.tn.get_token(ast_item.spelling), False, parent=reference)
+            Node(self.tn.get_token(ast_item.spelling), False, parent=reference)
+
+            return reference
 
 
     def handle_type_ref(self, ast_item, parent_node):
@@ -406,7 +408,7 @@ class NodeHandler:
     # To greatly reduce the numbe of unique terminal tokens if the dataset is large
     def create_terminal_nodes(self, label, ast_item, parent_node, tokens=None):
         if self.split_terminals:
-            # Splilt label by: '[', ']', '<', '>', ' ', '::'
+            # Splilt label by: '[', ']', '<', '>', ' ', '::', ','
             split_label = [el for el in re.split('(\[|\]|<|>| |::|,)', label) if len(el.strip()) > 0]
             # split_label = []
             # for t in tokens if tokens is not None else [tok.spelling for tok in ast_item.get_tokens()]:

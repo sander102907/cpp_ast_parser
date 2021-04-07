@@ -28,11 +28,11 @@ class AstToCodeParser:
 
         if tokenized:
             # Create reserved label tokenizer
-            self.res_tn = Tokenizer(output_folder)
+            self.res_tn = Tokenizer(output_folder, self.tokenized)
             self.res_tn.load(input_folder + 'reserved_tokens.json')
 
             # Create non reserved label tokenizer
-            self.tn = Tokenizer(output_folder)
+            self.tn = Tokenizer(output_folder, self.tokenized)
             self.tn.load(input_folder + 'tokens.json')
 
         # Create JSON importer
@@ -48,6 +48,7 @@ class AstToCodeParser:
     def get_label(self, node):
         if self.tokenized:
             if node.res:
+                print(self.res_tn.get_label(node.token))
                 return self.res_tn.get_label(node.token)
             else:
                 return self.tn.get_label(node.token)
@@ -278,11 +279,11 @@ class AstToCodeParser:
             for child in node.children[1:]:
                 code += self.parse_node(child)
         elif self.get_label(node) in ['DECL_REF_EXPR', 'MEMBER_REF_EXPR', 'MEMBER_REF', 'LABEL_REF'] or 'LITERAL' in self.get_label(node):
-            for child in node.children[0].children:
+            for child in node.children[1:]:
                 code += self.parse_node(child)
 
-            if self.get_label(node) == 'MEMBER_REF_EXPR' and len(node.children[0].children) > 0 \
-                and self.get_label(node.children[0].children[0]) != 'CXX_THIS_EXPR': #node.parent.parent) == 'REF':
+            if self.get_label(node) == 'MEMBER_REF_EXPR' and len(node.children) > 1 \
+                and self.get_label(node.children[1]) != 'CXX_THIS_EXPR': #node.parent.parent) == 'REF':
                 code += '.'
 
             code += self.get_label(node.children[0])
@@ -627,12 +628,6 @@ class AstToCodeParser:
                 file_queue.join()
                 for thread in threads:
                     thread.join() 
-
+ 
             except KeyboardInterrupt:
                 os.kill(0, 9)
-
-
-
-
-
-
