@@ -45,14 +45,21 @@ class AstParser:
         # Output folder to save data to
         self.output_folder = output_folder
 
-        # Create reserved label tokenizer
-        self.res_tn = Tokenizer(output_folder + 'reserved_tokens.json', tokenized)
+        self.tokenizers = {
+            'RES': Tokenizer(output_folder + 'reserved_tokens.json', tokenized),
+            'NAME': Tokenizer(output_folder + 'name_tokens.json', tokenized),
+            'TYPE': Tokenizer(output_folder + 'type_tokens.json', tokenized),
+            'LITERAL': Tokenizer(output_folder + 'literal_tokens.json', tokenized)
+        }
 
-        # Create non reserved label tokenizer
-        self.tn = Tokenizer(output_folder + 'tokens.json', tokenized)
+        # # Create reserved label tokenizer
+        # self.res_tn = Tokenizer(output_folder + 'reserved_tokens.json', tokenized)
+
+        # # Create non reserved label tokenizer
+        # self.tn = Tokenizer(output_folder + 'tokens.json', tokenized)
 
         # Create node handler object
-        self.nh = NodeHandler(self.res_tn, self.tn, split_terminals)
+        self.nh = NodeHandler(self.tokenizers, split_terminals)
 
         # Create AST file handler object
         self.ast_file_handler = AstFileHandler(self.output_folder, use_compression)
@@ -87,7 +94,7 @@ class AstParser:
         cursor_items = self.get_cursor_items(tu.cursor, temp_file_path)
 
         # Create a root node
-        root_node = Node(self.res_tn.get_token('root'), is_reserved=True)
+        root_node = Node(self.tokenizers['RES'].get_token('root'), is_reserved=True)
 
         # for cursor_item in cursor_items:
         #     for c in cursor_item.walk_preorder():
@@ -153,6 +160,9 @@ class AstParser:
             CursorKind.TEMPLATE_REF
             ]
 
+        # print(ast_item.spelling, ast_item.kind.name, ast_item.type.spelling, [t.spelling for t in ast_item.get_tokens()])
+
+
         # Skip useless AST primitives and exceptions -> continue straight with their children
         if ast_item.kind in skip_kinds \
         or 'operatorbool' == ast_item.spelling \
@@ -194,7 +204,7 @@ class AstParser:
         # parse type ref
         elif ast_item.kind == CursorKind.TYPE_REF \
             and parent_node\
-            and self.res_tn.get_label(parent_node.token) not in ['root', 'DECLARATOR',
+            and self.tokenizers['RES'].get_label(parent_node.token) not in ['root', 'DECLARATOR',
             'FUNCTION_DECL', 'FUNCTION_TEMPLATE', 'ARGUMENTS',
             'CXX_FUNCTIONAL_CAST_EXPR']:
             self.nh.handle_type_ref(ast_item, parent_node)
@@ -225,7 +235,7 @@ class AstParser:
         # if not one of the above -> create simple parent node of the kind of the item
         elif ast_item.kind != CursorKind.TYPE_REF:
             # print(ast_item.spelling, ast_item.kind.name)
-            parent_node = Node(self.res_tn.get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
+            parent_node = Node(self.tokenizers['RES'].get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
 
         # Do not iterate through children that we have already treated as arguments
         arguments = []
@@ -238,7 +248,7 @@ class AstParser:
             for index, child in enumerate(list(ast_item.get_children())[1:]):
                 # Add compound statment -> {...} if this is missing
                 if index == len(list(ast_item.get_children())[1:]) - 1 and child.kind != CursorKind.COMPOUND_STMT:
-                    compound_stmt = Node(self.res_tn.get_token('COMPOUND_STMT'), is_reserved=True, parent=parent_node)
+                    compound_stmt = Node(self.tokenizers['RES'].get_token('COMPOUND_STMT'), is_reserved=True, parent=parent_node)
                     self.parse_item(child, compound_stmt, program)
                 else:
                     self.parse_item(child, parent_node, program)
@@ -247,10 +257,11 @@ class AstParser:
         elif (ast_item.kind == CursorKind.IF_STMT or ast_item.kind == CursorKind.WHILE_STMT)\
              and any(CursorKind.COMPOUND_STMT != child.kind for child in list(ast_item.get_children())[1:]):
             for index, child in enumerate(ast_item.get_children()):
+                # print(child.spelling, child.kind.name, child.type.spelling, index)
                 if (index != 1 and index < len(list(ast_item.get_children())) - 1) or child.kind == CursorKind.COMPOUND_STMT or child.kind == CursorKind.IF_STMT:
                     self.parse_item(child, parent_node, program)
                 else:
-                    compound_stmt = Node(self.res_tn.get_token('COMPOUND_STMT'), is_reserved=True, parent=parent_node)
+                    compound_stmt = Node(self.tokenizers['RES'].get_token('COMPOUND_STMT'), is_reserved=True, parent=parent_node)
                     self.parse_item(child, compound_stmt, program)
 
         # Handle for statements with no compound statement. ADD COMPOUND STATEMENT
@@ -261,7 +272,7 @@ class AstParser:
                     self.parse_item(child, parent_node, program)
                 else:
                     if compound_stmt is None:
-                        compound_stmt = Node(self.res_tn.get_token('COMPOUND_STMT'), is_reserved=True, parent=parent_node)
+                        compound_stmt = Node(self.tokenizers['RES'].get_token('COMPOUND_STMT'), is_reserved=True, parent=parent_node)
                     self.parse_item(child, compound_stmt, program)
 
         # For while statement, only take first child and compound statements as children
@@ -277,12 +288,18 @@ class AstParser:
                 # Param declarations, arguments alreadly handled. 
                 # Also skip structure declarations if parent is declarator
                 # And skip compound statements if the parent is a constructor
+                # And skip array sizes if type of var decl is array, only consider the init list expressions
                 if not(child.kind == CursorKind.PARM_DECL or child.spelling in arguments \
                     or (ast_item.kind == CursorKind.STRUCT_DECL 
-                    and self.res_tn.get_label(parent_node.token) == 'DECLARATOR') \
+                    and self.tokenizers['RES'].get_label(parent_node.token) == 'DECLARATOR') \
                     or (parent_node and parent_node.token
-                    and self.res_tn.get_label(parent_node.token) == 'CONSTRUCTOR'
-                    and child.kind != CursorKind.COMPOUND_STMT)):
+                    and self.tokenizers['RES'].get_label(parent_node.token) == 'CONSTRUCTOR'
+                    and child.kind != CursorKind.COMPOUND_STMT)\
+                    or (ast_item.kind in [CursorKind.VAR_DECL, CursorKind.FIELD_DECL]
+                    and 'TYPE_ARRAY' in [self.tokenizers['RES'].get_label(c.token) for c in parent_node.parent.children[0].children] +
+                     [self.tokenizers['RES'].get_label(c.token) for c in parent_node.parent.children[1].children]
+                    and child.kind != CursorKind.INIT_LIST_EXPR)):
+
                     self.parse_item(child, parent_node, program)
 
 
@@ -290,15 +307,15 @@ class AstParser:
         while not file_queue.empty():
             # Get a program from the queue
             program_id, code, imports = file_queue.get()
-            try:
+            # try:
                 # Parse the AST tree for the program
-                ast = self.parse_ast(code, imports, thread_nr)
-            except Exception as e:
-                print(f'Skipping file due to parsing failing: {program_id} - {e}')
-                pbar.set_description(f'{datetime.now()}')
-                pbar.update()
-                file_queue.task_done()
-                continue
+            ast = self.parse_ast(code, imports, thread_nr)
+            # except Exception as e:
+            #     print(f'Skipping file due to parsing failing: {program_id} - {e}')
+            #     pbar.set_description(f'{datetime.now()}')
+            #     pbar.update()
+            #     file_queue.task_done()
+            #     continue
 
             # Write the AST tree to file
             self.ast_file_handler.add_ast(ast, program_id)
@@ -316,8 +333,9 @@ class AstParser:
 
     def __cleanup(self):
         # Save tokens to file
-        self.res_tn.save()
-        self.tn.save()
+        for tokenizer in self.tokenizers.values():
+            tokenizer.save()
+
         self.ast_file_handler.save()
         
 
@@ -336,19 +354,21 @@ class AstParser:
         os.makedirs(self.output_folder, exist_ok=True)
 
         # Read csv file in chunks (may be very large)
-        programs = pd.read_csv(self.csv_file_path, chunksize=1e4)
+        programs = pd.read_csv(self.csv_file_path, chunksize=1e2)
 
         # iterate over the chunks
         for i, programs_chunk in enumerate(programs):
             # Create progressbar
-            pbar = tqdm(total=len(programs_chunk), unit=' program', postfix=f'chunk {i}', colour='green')
+            pbar = tqdm(total=len(programs_chunk), unit=' program', postfix=f'chunk {i}', colour='green', disable=False)
             # Create file queue to store the program data
             file_queue = queue.Queue(len(programs_chunk))
 
             # Fill the queue with files.
             for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
-                # if program[1]['solutionId'] == 106209681:
+                # if program[1]['solutionId'] == 44591144:
                     file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
+                    # break
+            
 
             try:
                 threads = []
@@ -371,6 +391,8 @@ class AstParser:
             except KeyboardInterrupt:
                 self.__cleanup()
                 os.kill(0, 9)
+
+            break
 
         self.__cleanup()
 
