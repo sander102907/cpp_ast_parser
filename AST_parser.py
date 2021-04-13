@@ -50,7 +50,7 @@ class AstParser:
         self.output_folder = output_folder
 
         # Create AST file handler object
-        self.ast_file_handler = AstFileHandler(self.output_folder, use_compression)
+        self.ast_file_handler = AstFileHandler(self.output_folder + 'asts/', use_compression)
 
         # Boolean whether or not to use compression to save AST files as .gz
         self.use_compression = use_compression
@@ -67,18 +67,18 @@ class AstParser:
             self.size = self.comm.Get_size()
 
             # Create reserved label tokenizer
-            self.res_tn = Tokenizer(output_folder + f'reserved_tokens_{self.rank}.json', tokenized)
+            self.res_tn = Tokenizer(output_folder + 'reserved_tokens/' + f'reserved_tokens_{self.rank}.json', tokenized)
 
             # Create non reserved label tokenizer
-            self.tn = Tokenizer(output_folder + f'tokens_{self.rank}.json', tokenized)
+            self.tn = Tokenizer(output_folder + 'tokens/' +  f'tokens_{self.rank}.json', tokenized)
 
-            self.ast_file_handler = AstFileHandler(self.output_folder, use_compression, self.rank)
+            self.ast_file_handler = AstFileHandler(self.output_folder + 'asts/', use_compression, self.rank)
         else:
             # Create reserved label tokenizer
-            self.res_tn = Tokenizer(output_folder + 'reserved_tokens.json', tokenized)
+            self.res_tn = Tokenizer(output_folder + 'reserved_tokens/' + 'reserved_tokens.json', tokenized)
 
             # Create non reserved label tokenizer
-            self.tn = Tokenizer(output_folder + 'tokens.json', tokenized)
+            self.tn = Tokenizer(output_folder + 'tokens/' + 'tokens.json', tokenized)
 
             self.ast_file_handler = AstFileHandler(self.output_folder, use_compression)
 
@@ -95,7 +95,7 @@ class AstParser:
 
         # Set arguments and add compiler system include paths (with ccsyspath)
         args    = '-x c++ --std=c++20'.split()
-        syspath = ccsyspath.system_include_paths('clang++')
+        syspath = ccsyspath.system_include_paths('clang')
         incargs = [ b'-I' + inc for inc in syspath ]
         args    = args + incargs
 
@@ -424,6 +424,9 @@ class AstParser:
 
         # Create output directory if it does not exist yet
         os.makedirs(self.output_folder, exist_ok=True)
+        os.makedirs(self.output_folder + 'asts/', exist_ok=True)
+        os.makedirs(self.output_folder + 'reserved_tokens/', exist_ok=True)
+        os.makedirs(self.output_folder + 'tokens/', exist_ok=True)
 
         # Read csv file in chunks (may be very large)
         programs = pd.read_csv(self.csv_file_path, chunksize=1e5)
@@ -452,7 +455,6 @@ class AstParser:
 
             self.mpi_parser(files, self.rank)
             self.__cleanup()
-
         
 
         
