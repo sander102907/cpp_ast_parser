@@ -79,36 +79,36 @@ def program_tester(file_queue, pbar, solutions, problems, compile_folder, return
             t.start()
             proc.wait()
 
-        solution_data = solutions[solutions['solutionId'] == solution]
+        # solution_data = solutions[solutions['solutionId'] == solution]
 
-        tests = problems[(problems['contestId'] == solution_data['contestId'].iloc[0]) & (problems['problem'] == solution_data['problem'].iloc[0])]['allTests'].iloc[0]
+        # tests = problems[(problems['contestId'] == solution_data['contestId'].iloc[0]) & (problems['problem'] == solution_data['problem'].iloc[0])]['allTests'].iloc[0]
 
-        tests_split = re.split(r'([^()]+)', tests[1:-1])
-        tests_split_filtered = list(filter(lambda a: a != '(' and a != ')' and a != ', ', tests_split))
+        # tests_split = re.split(r'([^()]+)', tests[1:-1])
+        # tests_split_filtered = list(filter(lambda a: a != '(' and a != ')' and a != ', ', tests_split))
 
-        try:
-            start = time.time() 
-            for test in tests_split_filtered:
-                if time.time() - start > 10:
-                    break
-                program_input = test.replace('\\n', '\r\n').replace("'", '').split(', ')[0].strip()
-                program_output = test.replace('\\n', '\r\n').replace("'", '').split(', ')[1].strip()
+        # try:
+        #     start = time.time() 
+        #     for test in tests_split_filtered:
+        #         if time.time() - start > 10:
+        #             break
+        #         program_input = test.replace('\\n', '\r\n').replace("'", '').split(', ')[0].strip()
+        #         program_output = test.replace('\\n', '\r\n').replace("'", '').split(', ')[1].strip()
 
-                # Scrip scraped tests that were cut off by codeforces (too long)
-                if not program_input.endswith('...'):
-                    analyzer = pexpect.spawn(compiled_file_path, encoding='utf-8')
-                    analyzer.expect('')
-                    analyzer.sendline(program_input)
-                    try:
-                        analyzer.expect(program_output)
-                    except Exception:
-                        failed_tests += 1
+        #         # Scrip scraped tests that were cut off by codeforces (too long)
+        #         if not program_input.endswith('...'):
+        #             analyzer = pexpect.spawn(compiled_file_path, encoding='utf-8')
+        #             analyzer.expect('')
+        #             analyzer.sendline(program_input)
+        #             try:
+        #                 analyzer.expect(program_output)
+        #             except Exception:
+        #                 failed_tests += 1
 
-                passed_tests += 1
-                # print(f'test {compiled_file_path}')
+        #         passed_tests += 1
+        #         # print(f'test {compiled_file_path}')
 
-        except Exception:
-            compiled = False
+        # except Exception:
+        #     compiled = False
 
         pbar.update()
         data = {'program': file_path, 'compiled': compiled, 'amt_tests_failed': failed_tests, 'amt_tests_passed': passed_tests}
@@ -119,6 +119,6 @@ def program_tester(file_queue, pbar, solutions, problems, compile_folder, return
 if __name__ == '__main__':
     input_folder = '../data/ast_trees_to_code/'
     compile_folder = '../data/ast_trees_to_code_compiled/'
-    test_results_path = 'test_results4.csv'
+    test_results_path = 'test_results5.csv'
 
     test_programs(input_folder, compile_folder, test_results_path)

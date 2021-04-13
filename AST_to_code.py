@@ -48,9 +48,9 @@ class AstToCodeParser:
     def get_label(self, node):
         if self.tokenized:
             if node.res:
-                print(self.res_tn.get_label(node.token))
                 return self.res_tn.get_label(node.token)
             else:
+                print(self.tn.get_label(node.token))
                 return self.tn.get_label(node.token)
         else:
             return node.token
@@ -127,18 +127,30 @@ class AstToCodeParser:
         acc_spec = ''
         var_type = ''
 
+        # If the variable is an array, this is will be filled
+        array_sizes = []
+
 
         for child in ast_item.children:
             # Skip the type if this is a child of a declaration statement and not the first child
             #  and the type is the same as the type of the first child
-            if self.get_label(child) == 'TYPE' and \
+            if self.get_label(child) == 'TYPE_KIND' and \
             not (self.get_label(ast_item.parent) == 'DECL_STMT' \
                 and ast_item != ast_item.parent.children[0]):
-                    var_type += self.merge_terminals(child.children)
-            # if declaration statement and not the first child, get the possible dimensions -> [2][3]
-            elif self.get_label(child) == 'TYPE':
-                self.merge_terminals(child.children)
-                var_type += ''.join(re.findall(r'\[.*\]', self.merge_terminals(child.children)))                
+                var_type_size = self.get_type(child.children[0])
+
+                if type(var_type_size) is tuple:
+                    var_type += var_type_size[0]
+                    array_sizes = var_type_size[1]
+                else:
+                    var_type = var_type_size
+            elif self.get_label(child) == 'TYPE_KIND':
+                var_type_size = self.get_type(child.children[0])
+
+                if type(var_type_size) is tuple:
+                    array_sizes = var_type_size[1]
+
+              
             elif self.get_label(child) == 'DECLARATOR':
                 for decl_child in child.children:
                     if self.get_label(decl_child) == 'NAME':
@@ -146,44 +158,71 @@ class AstToCodeParser:
                     else:
                         declarations.append(self.parse_node(decl_child))
             elif self.get_label(child) == 'ACCESS_SPECIFIER':
-                acc_spec += f'{self.merge_terminals(child.children).lower()}:\n'
+                acc_spec += f'{self.merge_terminals(child.children).lower()}:\n'        
 
-
-        # get ref dims from type so e.g. int x[50][20] -> ['[50]', '[20]']
-        ref_dims = re.findall(r'\[[^\[\]]*\]', var_type)
-
-        # Get number if dimensions -> e.g. ch[1][1] has 2 dimensions
-        dimensions = len(ref_dims)
-
-        # bitset<N> bs[N]; -> Has two declarations of N, first is for <N> second is dimension, we do not need the <..> declarations
-        type_args = []
-        for el in re.findall(r'<[^<>]*>', var_type):
-            type_args += el.replace('<', '').replace('>', '').split(',')
-
-        for decl in declarations:
-            for arg in type_args:
-                if decl in arg:
-                    type_args.remove(arg)
-                    declarations.remove(decl)
-                    break
-        
-
-        # ref_dims = ['[' + num + ']' for num in declarations[:dimensions][::-1]]
-
-
-        # Format var type (remove dims) e.g. char [40] -> char
-        var_type = var_type.split('[')[0].strip()
+        ref_dims = ['[' + num + ']' for num in array_sizes]
 
         # initialize value the variable was initialized to (empty)
         var_value = ''
 
         # append initial values if set
-        if len(declarations[dimensions:]) > 0:
-            var_value += ' = ' + ' '.join(declarations[dimensions:])
+        if len(declarations) > 0:
+            var_value += ' = ' + ' '.join(declarations)
 
 
         # Combine the type of the variable with the name, dimensions and initial value
         return f'{acc_spec}{var_type} {var_name}{"".join(ref_dims)}{var_value}'
+
+    def get_type(self, ast_item):
+        type_string = ''
+
+        if self.get_label(ast_item) in ['TYPE', 'TYPE_REF']:
+            return self.get_label(ast_item.children[0])
+
+        elif self.get_label(ast_item) == 'TYPE_ARRAY':
+            array_sizes = []
+            array_type = 'auto'
+            for array_child in ast_item.children:
+                if self.get_label(array_child) in ['TYPE', 'TYPE_REF', 'TYPE_RECORD']:
+                    array_type = self.get_type(array_child)
+                elif self.get_label(array_child) == 'ARRAY_SIZES':
+                    for array_size in array_child.children:
+                        array_sizes.append(self.get_label(array_size.children[0]))
+
+            type_string += array_type
+
+            return (type_string, array_sizes)
+
+        elif self.get_label(ast_item) == 'TYPE_RECORD':
+            record_type = 'auto'
+            for record_child in ast_item.children:
+                if self.get_label(record_child) in ['TYPE', 'TYPE_REF']:
+                    record_type = self.get_type(record_child)   
+
+            type_string += record_type
+
+            for record_child in ast_item.children:                       
+                if self.get_label(record_child) == 'TYPE_RECORD_ELEMENTS':
+                    type_string += '<'
+                    for index, record_element in enumerate(record_child.children):
+                        type_string += self.get_type(record_element)
+
+                        if index < len(record_child.children)- 1:
+                            type_string += ', '
+
+                    type_string += '>'
+
+            
+            return type_string
+
+        elif self.get_label(ast_item) == 'LVALUEREFERENCE':
+            return self.get_type(ast_item.children[0]) + '&'
+
+        elif self.get_label(ast_item) == 'RVALUEREFERENCE':
+            return self.get_type(ast_item.children[0]) + '&&'
+
+                            
+                    
 
 
     def get_function_decl(self, ast_item):
@@ -192,8 +231,8 @@ class AstToCodeParser:
         return_type = ''
         const = ''
         for child in ast_item.children:
-            if self.get_label(child) == 'RETURN_TYPE':
-                return_type += self.get_label(child.children[0])
+            if self.get_label(child) == 'TYPE_KIND':
+                return_type += self.get_type(child.children[0])
             elif self.get_label(child) == 'PARM_DECL':
                 params.append(self.get_var_decl(child))
             elif self.get_label(child) == 'NAME':
@@ -244,7 +283,7 @@ class AstToCodeParser:
 
     def parse_node(self, node):
         call_exp_operators = ['[]', '=', '<<', '>>', '==', '+', '-', '%', '*', '/',
-                             '+=', '-=', '^=', '||', '()',
+                             '+=', '-=', '^=', '||', '()', '!=',
                              '++_PRE', '++_POST', '--_PRE', '--_POST']
 
         call_exp_operator_labels = ['operator' + op for op in call_exp_operators]
@@ -274,7 +313,7 @@ class AstToCodeParser:
             code += 'nullptr'
         elif self.get_label(node) == 'COMPOUND_LITERAL_EXPR' or self.get_label(node) == 'CSTYLE_CAST_EXPR':
             code += '('
-            code += self.parse_node(node.children[0])
+            code += self.parse_node(node.children[0]) if self.get_label(node) == 'COMPOUND_LITERAL_EXPR' else self.get_type(node.children[0].children[0])
             code += ')'
             for child in node.children[1:]:
                 code += self.parse_node(child)
@@ -366,7 +405,7 @@ class AstToCodeParser:
         elif self.get_label(node) == 'TYPEDEF_DECL':
             for child in node.children:
                 if self.get_label(child) == 'TYPE_DEF':
-                    code += f'typedef {self.merge_terminals(child.children)} '
+                    code += f'typedef {self.get_type(child.children[0].children[0])} '
                 elif self.get_label(child) == 'IDENTIFIER':
                     code += self.get_label(child.children[0])
 
@@ -377,7 +416,7 @@ class AstToCodeParser:
             code += self.parse_node(node.children[1])
 
         elif self.get_label(node) == 'TYPE_REF' or self.get_label(node) == 'TYPE':
-            code += self.get_label(node.children[0])
+            code += self.get_type(node)
             if self.get_label(node.parent) != 'COMPOUND_LITERAL_EXPR' and not 'CAST' in self.get_label(node.parent):
                 code += '::'
 
@@ -531,6 +570,10 @@ class AstToCodeParser:
             for child in node.children[1:]:
                 code += self.parse_node(child)
 
+        # elif self.get_label(node) == 'TYPE_KIND':
+        #     code += self.get_type(node.children[0])
+        #     print(node.parent, node.children[0].children)
+
         else:
             # print(self.get_label(node))
             pass
@@ -557,7 +600,6 @@ class AstToCodeParser:
         while not file_queue.empty():
             ast_id, ast = file_queue.get()
 
-
             root = self.importer.import_(ast)
 
             output =  open(f'{output_folder}{ast_id}.cpp', 'w')
@@ -575,9 +617,11 @@ class AstToCodeParser:
             output.close()
 
             # print(imports.keys())
-
-            imports_file = imports[int(ast_id)]
-            imports_file = [ele for ele in imports_file[1:-1].split("'") if ele != '' and ele != ', ']
+            try:
+                imports_file = imports[int(ast_id)]
+                imports_file = [ele for ele in imports_file[1:-1].split("'") if ele != '' and ele != ', ']
+            except KeyError:
+                imports_file = []
 
             # This is not always added but sometimes needed e.g.: std::cout is used in original code but we simply use cout
             if 'using namespace std;' not in imports_file:
