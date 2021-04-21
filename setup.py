@@ -18,5 +18,5 @@ setup(name='CPP AST Parser',
           'tqdm',
       ],
       long_description=open('README.md').read(),
-      license='MIT'
+      license='APACHE 2.0'
      )
