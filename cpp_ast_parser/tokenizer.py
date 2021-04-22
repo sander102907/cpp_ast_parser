@@ -73,7 +73,7 @@ class Tokenizer:
 
 
     # Merges this tokenizer with another tokenizer
-    def merge(self, tokenizer: Tokenizer):
+    def merge(self, tokenizer):
         if self.tokenized:
             for label in tokenizer.token_dict.keys():
                 if label not in self.token_dict:

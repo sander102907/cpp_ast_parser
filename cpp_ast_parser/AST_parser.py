@@ -15,7 +15,6 @@ from tokenizer import Tokenizer
 import gzip
 from AST_file_handler import AstFileHandler
 from datetime import datetime
-from mpi4py import MPI
 import math
 import ccsyspath
 
@@ -69,6 +68,7 @@ class AstParser:
         self.mpi = mpi
 
         if mpi:
+            from mpi4py import MPI
             self.comm = MPI.COMM_WORLD
             self.rank = self.comm.Get_rank()
             self.size = self.comm.Get_size()

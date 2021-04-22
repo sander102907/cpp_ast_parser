@@ -10,7 +10,6 @@ from tqdm import tqdm
 from utils import assignment_operators, add_includes_usings
 
 
-
 def roundtrip_mpi(ast_folder, code_folder, programs_csv_path, libclang_path, use_compression, split_terminals, tokenized):
     compile_folder = os.path.join(code_folder, 'compiled/')
 

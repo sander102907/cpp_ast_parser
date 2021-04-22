@@ -3,7 +3,6 @@ from cpp_ast_parser.AST_parser import AstParser
 from cpp_ast_parser.AST_to_code import AstToCodeParser
 from cpp_ast_parser.tester import Tester
 import multiprocessing
-from cpp_ast_parser.roundtrip import roundtrip_mpi
 
 def main():
     args_parser = argparse.ArgumentParser(
@@ -131,6 +130,7 @@ def main():
         split_terminals = args.split_terminals
 
         if mpi:
+            from cpp_ast_parser.roundtrip import roundtrip_mpi
             roundtrip_mpi(input_folder, output_folder, csv_file_path, libclang_path, use_compression, split_terminals, tokenized)
 
         else:
