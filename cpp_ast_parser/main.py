@@ -1,9 +1,9 @@
 import argparse
-from AST_parser import AstParser
-from AST_to_code import AstToCodeParser
-from tester import Tester
+from cpp_ast_parser.AST_parser import AstParser
+from cpp_ast_parser.AST_to_code import AstToCodeParser
+from cpp_ast_parser.tester import Tester
 import multiprocessing
-
+from cpp_ast_parser.roundtrip import roundtrip_mpi
 
 def main():
     args_parser = argparse.ArgumentParser(
@@ -129,17 +129,12 @@ def main():
     elif parse_method == 'roundtrip':
         input_folder = args.input_folder
         split_terminals = args.split_terminals
-        ast_parser = AstParser(libclang_path, csv_file_path, input_folder, use_compression, processes_num, split_terminals, tokenized)
-        ast_parser.parse_csv()
 
-        ast_to_code_parser = AstToCodeParser(input_folder, output_folder, csv_file_path, use_compression, processes_num, tokenized)
-        ast_to_code_parser.parse_asts_to_code()
+        if mpi:
+            roundtrip_mpi(input_folder, output_folder, csv_file_path, libclang_path, use_compression, split_terminals, tokenized)
 
-        tester = Tester()
-        tester.test_program_compiles()
-
-
-
+        else:
+            print('Not implemented yet, only with MPI support.')
 
     else:
         print('Please choose a valid method: AST, code or round trip')
@@ -148,3 +143,6 @@ def main():
 
 if __name__ == "__main__":
    main()
+
+
+

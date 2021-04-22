@@ -19,11 +19,18 @@ class Tester:
         os.makedirs(compile_folder, exist_ok=True)
 
         compiled_file_path = os.path.join(compile_folder, f'{program_path.split("/")[-1]}.out')
-        proc = subprocess.Popen(['g++', program_path, '-o', compiled_file_path, '-std=c++20'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        if os.path.isfile(compiled_file_path):
+            os.remove(compiled_file_path)
+            
+        proc = subprocess.Popen(['g++', program_path, '-o', compiled_file_path, '-std=c++17'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         # timeout after 10 seconds
         t = Timer(10, proc.kill)
         t.start()
         proc.wait()
+
+        return os.path.isfile(compiled_file_path)
+
 
 
     def test_programs(self, input_folder, compile_folder, test_results_path):
