@@ -55,12 +55,12 @@ The CSV file should contain the following columns (note that since this is origi
 ## Example
 
 To create ASTs from a CSV file with C++ programs, this is an example of how to run the program:\
-```python3 main.py AST -csv ../data/cpp_preprocessed/test.csv -o ../data/ast_trees/ -l /usr/lib/x86_64-linux-gnu/libclang-6.0.so.1```
+```python3 main.py AST -csv ../../data/cpp_preprocessed/test.csv -o ../../data/ast_trees/ -l /usr/lib/x86_64-linux-gnu/libclang-6.0.so.1```
 
 To set the CSV input file, the output folder to save the AST trees and the clang library file path.
 
 To parse ASTs back to the C++ programs, this is an example of how to run the program:\
-```python3 main.py code -csv ../data/cpp_preprocessed/test.csv -i ../data/ast_trees/ -o ../data/ast_trees_to_code/ -l /usr/lib/x86_64-linux-gnu/libclang-6.0.so.1```
+```python3 main.py code -csv ../../data/cpp_preprocessed/test.csv -i ../../data/ast_trees/ -o ../../data/ast_trees_to_code/ -l /usr/lib/x86_64-linux-gnu/libclang-6.0.so.1```
 
 To set the CSV used for setting back the imports, the input folder containing the ASTs, the output folder to store the C++ programs and the clang library file path.
 

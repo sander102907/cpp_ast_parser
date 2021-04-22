@@ -332,15 +332,15 @@ class AstParser:
         while not file_queue.empty():
             # Get a program from the queue
             program_id, code, imports = file_queue.get()
-            # try:
+            try:
                 # Parse the AST tree for the program
-            ast = self.parse_ast(code, imports, thread_nr)
-            # except Exception as e:
-            #     print(f'Skipping file due to parsing failing: {program_id} - {e}')
-            #     pbar.set_description(f'{datetime.now()}')
-            #     pbar.update()
-            #     file_queue.task_done()
-            #     continue
+                ast = self.parse_ast(code, imports, thread_nr)
+            except Exception as e:
+                print(f'Skipping file due to parsing failing: {program_id} - {e}')
+                pbar.set_description(f'{datetime.now()}')
+                pbar.update()
+                file_queue.task_done()
+                continue
 
             # Write the AST tree to file
             self.ast_file_handler.add_ast(ast, program_id)
@@ -438,7 +438,6 @@ class AstParser:
                 self.__cleanup()
                 os.kill(0, 9)
 
-            break
 
         self.__cleanup()
 

@@ -27,13 +27,21 @@ class AstToCodeParser:
         self.tokenized = tokenized
 
         if tokenized:
-            # Create reserved label tokenizer
-            self.res_tn = Tokenizer(output_folder, self.tokenized)
-            self.res_tn.load(input_folder + 'reserved_tokens.json')
+            self.tokenizers = {}
 
-            # Create non reserved label tokenizer
-            self.tn = Tokenizer(output_folder, self.tokenized)
-            self.tn.load(input_folder + 'tokens.json')
+            for dirs, _, files in os.walk(input_folder):
+                for file in files:
+                    if 'tokens.json' in file:
+                        self.tokenizers[file.split('_')[0]] = Tokenizer(output_folder, self.tokenized)
+                        self.tokenizers[file.split('_')[0]].load(os.path.join(dirs, file))
+
+            # Create reserved label tokenizer
+            # self.res_tn = Tokenizer(output_folder, self.tokenized)
+            # self.res_tn.load(input_folder + 'RES_tokens.json')
+
+            # # Create non reserved label tokenizer
+            # self.tn = Tokenizer(output_folder, self.tokenized)
+            # self.tn.load(input_folder + 'tokens.json')
 
         # Create JSON importer
         self.importer = JsonImporter()
@@ -48,10 +56,15 @@ class AstToCodeParser:
     def get_label(self, node):
         if self.tokenized:
             if node.res:
-                return self.res_tn.get_label(node.token)
+                return self.tokenizers['RES'].get_label(node.token)
             else:
-                print(self.tn.get_label(node.token))
-                return self.tn.get_label(node.token)
+                parent_label = self.tokenizers['RES'].get_label(node.parent.token)
+                if 'LITERAL' in parent_label:   
+                    return self.tokenizers['LITERAL'].get_label(node.token)      
+                elif 'TYPE' == parent_label:
+                    return self.tokenizers['TYPE'].get_label(node.token)
+                else:
+                    return self.tokenizers['NAME'].get_label(node.token)
         else:
             return node.token
 
@@ -176,7 +189,19 @@ class AstToCodeParser:
     def get_type(self, ast_item):
         type_string = ''
 
-        if self.get_label(ast_item) in ['TYPE', 'TYPE_REF']:
+        if self.get_label(ast_item) == 'POINTER':
+            type_string += self.get_type(ast_item.children[0])
+
+            type_string += ' *'
+            return type_string
+
+        elif self.get_label(ast_item) == 'CONST_QUALIFIED':
+            type_string += 'const '
+            type_string += self.get_type(ast_item.children[0])
+            return type_string
+
+
+        elif self.get_label(ast_item) in ['TYPE', 'TYPE_REF']:
             return self.get_label(ast_item.children[0])
 
         elif self.get_label(ast_item) == 'TYPE_ARRAY':
@@ -220,6 +245,9 @@ class AstToCodeParser:
 
         elif self.get_label(ast_item) == 'RVALUEREFERENCE':
             return self.get_type(ast_item.children[0]) + '&&'
+
+        else:
+            return self.get_label(ast_item)
 
                             
                     
