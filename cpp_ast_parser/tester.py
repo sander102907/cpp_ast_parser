@@ -18,7 +18,7 @@ class Tester:
     def test_program_compiles(self, program_path, compile_folder):
         os.makedirs(compile_folder, exist_ok=True)
 
-        compiled_file_path = os.path.join(compile_folder, f'{program_path.split("/")[-1]}.out')
+        compiled_file_path = os.path.join(compile_folder, f'{program_path.split("/")[-1]}.out'.replace('.cpp', ''))
 
         if os.path.isfile(compiled_file_path):
             os.remove(compiled_file_path)
@@ -29,7 +29,12 @@ class Tester:
         t.start()
         proc.wait()
 
-        return os.path.isfile(compiled_file_path)
+        compiles = os.path.isfile(compiled_file_path)
+
+        if compiles:
+            os.remove(compiled_file_path)
+
+        return compiles
 
 
 

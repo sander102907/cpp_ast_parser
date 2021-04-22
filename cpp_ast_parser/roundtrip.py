@@ -70,11 +70,10 @@ def roundtrip_mpi(ast_folder, code_folder, programs_csv_path, libclang_path, use
                 print(f'Skipping file due to code to AST failing: {program_id} - {e}')
                 continue
 
-            root = ast_to_code_parser.importer.import_(ast)
             output =  open(f'{code_folder}{program_id}.cpp', 'w')
 
             try:
-                for child in root.children:
+                for child in ast.children:
                     output.write(ast_to_code_parser.parse_node(child))
             except Exception as e:
                 print(f'Skipping file due to AST to code failing: {program_id} - {e}')
@@ -87,10 +86,11 @@ def roundtrip_mpi(ast_folder, code_folder, programs_csv_path, libclang_path, use
             if 'using namespace std;' not in imports:
                 imports.append('using namespace std;')
 
-                add_includes_usings(f'{code_folder}{program_id}.cpp', imports)
+            add_includes_usings(f'{code_folder}{program_id}.cpp', imports)
 
+            compiles = tester.test_program_compiles(f'{code_folder}{program_id}.cpp', compile_folder)
             
-            if tester.test_program_compiles(f'{code_folder}{program_id}.cpp', compile_folder):
+            if compiles:
                 ast_parser.ast_file_handler.add_ast(ast, program_id)
 
                 for key, tokenizer in tokenizers.items():
