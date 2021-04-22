@@ -189,7 +189,19 @@ class AstToCodeParser:
     def get_type(self, ast_item):
         type_string = ''
 
-        if self.get_label(ast_item) in ['TYPE', 'TYPE_REF']:
+        if self.get_label(ast_item) == 'POINTER':
+            type_string += self.get_type(ast_item.children[0])
+
+            type_string += ' *'
+            return type_string
+
+        elif self.get_label(ast_item) == 'CONST_QUALIFIED':
+            type_string += 'const '
+            type_string += self.get_type(ast_item.children[0])
+            return type_string
+
+
+        elif self.get_label(ast_item) in ['TYPE', 'TYPE_REF']:
             return self.get_label(ast_item.children[0])
 
         elif self.get_label(ast_item) == 'TYPE_ARRAY':
@@ -233,6 +245,9 @@ class AstToCodeParser:
 
         elif self.get_label(ast_item) == 'RVALUEREFERENCE':
             return self.get_type(ast_item.children[0]) + '&&'
+
+        else:
+            return self.get_label(ast_item)
 
                             
                     
@@ -617,15 +632,15 @@ class AstToCodeParser:
 
             output =  open(f'{output_folder}{ast_id}.cpp', 'w')
                 
-            # try:
-            for child in root.children:
-                output.write(self.parse_node(child))
-            # except Exception as e:
-            #     print(f'File: {ast_id} failed: {e}')
-            #     pbar.update()
-            #     file_queue.task_done()
-            #     output.close()
-            #     continue
+            try:
+                for child in root.children:
+                    output.write(self.parse_node(child))
+            except Exception as e:
+                print(f'File: {ast_id} failed: {e}')
+                pbar.update()
+                file_queue.task_done()
+                output.close()
+                continue
 
             output.close()
 

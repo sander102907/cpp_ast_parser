@@ -9,6 +9,14 @@ class NodeHandler:
         self.tokenizers = tokenizers
         self.split_terminals = split_terminals
 
+        self.builtin_types = ['int', 'long', 'long long', 'double', 'long double', 'unsigned long long', 'vector',
+                            'void', 'map', 'auto', 'short', 'deque', 'bool', 'pair', 'int32_t', 'queue', 'priority_queue',
+                            'istream_iterator', 'complex', 'char', 'set', 'unsigned int', 'string', 'stack', 'unordered_map',
+                            'tuple', 'multiset', 'unsigned long', 'unsigned char', 'signed char', 'signed int', 'short int',
+                            'unsigned short int', 'signed short int', 'long int', 'signed long int', 'unsigned long int', 'long long int',
+                            'unsigned long long int', 'float', 'wchar_t', 'bitset', 'unordered_set', 'basic_string', 'array', 'forward_list',
+                            'shared_ptr', 'std::__cxx11::basic_string<char>']
+
     def handle_typedef(self, ast_item, parent_node):
         # Set top node as TYPEDEF_DECL
         typedef_decl = Node(self.tokenizers['RES'].get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
@@ -420,16 +428,29 @@ class NodeHandler:
         # Node(self.tn.get_token(ast_item.spelling), is_reserved=False, parent=stmt)
         return stmt
 
+
     def handle_type(self, ast_item, parent_node, children=None, recursion_level=0):
-        if utils.is_function(ast_item): #self.tokenizers['RES'].get_label(parent_node.token) == 'FUNCTION_DECL':
-            canonical_type = ast_item.type.get_result()
-            function_type = True
-        else:
-            canonical_type = ast_item.type.get_canonical()
-            function_type =False
+        canonical_type = ast_item.type.get_canonical()
+        function_type =False
 
         if children is None:
             parent_node = Node(self.tokenizers['RES'].get_token('TYPE_KIND'), is_reserved=True, parent=parent_node)
+
+        while canonical_type.kind == TypeKind.POINTER:
+            parent_node = Node(self.tokenizers['RES'].get_token('POINTER'), is_reserved=True, parent=parent_node)
+            canonical_type = canonical_type.get_pointee()
+        
+
+        if utils.is_function(ast_item) or canonical_type.kind == TypeKind.FUNCTIONPROTO: #self.tokenizers['RES'].get_label(parent_node.token) == 'FUNCTION_DECL':
+            canonical_type = ast_item.type.get_result()
+            function_type = True
+
+        while canonical_type.kind == TypeKind.POINTER:
+            parent_node = Node(self.tokenizers['RES'].get_token('POINTER'), is_reserved=True, parent=parent_node)
+            canonical_type = canonical_type.get_pointee()
+
+        if canonical_type.is_const_qualified():
+            parent_node = Node(self.tokenizers['RES'].get_token('CONST_QUALIFIED'), is_reserved=True, parent=parent_node)
 
         for token in ast_item.get_tokens():
             if 'auto' == token.spelling:
@@ -440,19 +461,27 @@ class NodeHandler:
 
 
         # E.g. vector<int> or pair<long long, pair<long long, long long>> or std::string
-        if canonical_type.kind == TypeKind.RECORD or children is not None:
+        if canonical_type.kind in [TypeKind.RECORD, TypeKind.ELABORATED] or children is not None:
             record = Node(self.tokenizers['RES'].get_token('TYPE_RECORD'), is_reserved=True, parent=parent_node)
 
             if children is None:
                 children = list(ast_item.get_children())
 
             if children[0].kind == CursorKind.TYPE_REF:
-                record_type = Node(self.tokenizers['RES'].get_token('TYP_REF'), is_reserved=True, parent=record)
+                record_type = Node(self.tokenizers['RES'].get_token('TYPE_REF'), is_reserved=True, parent=record)
                 Node(self.tokenizers['NAME'].get_token(children[0].type.get_canonical().spelling), is_reserved=False, parent=record_type)
             elif len(children[0].spelling) > 0: # children[0].kind == CursorKind.TEMPLATE_REF:
-                record_type = Node(self.tokenizers['RES'].get_token('TYPE'), is_reserved=True, parent=record)
-                Node(self.tokenizers['TYPE'].get_token(children[0].spelling), is_reserved=False, parent=record_type)
+                if children[0].kind == CursorKind.TEMPLATE_REF:
+                    self.extract_builtin_type(children[0].spelling, record)
+                    # record_type = Node(self.tokenizers['RES'].get_token('TYPE'), is_reserved=True, parent=record)
+                    # if children[0].spelling not in self.builtin_types:
+                    #     print(children[0].spelling)
+                    # Node(self.tokenizers['TYPE'].get_token(children[0].spelling), is_reserved=False, parent=record_type)
+                else:
+                    record_type = Node(self.tokenizers['RES'].get_token('TYPE_REF'), is_reserved=True, parent=record)
+                    Node(self.tokenizers['NAME'].get_token(children[0].spelling), is_reserved=False, parent=record_type)
             else:
+                
                 record_type = Node(self.tokenizers['RES'].get_token('TYPE'), is_reserved=True, parent=record)
                 Node(self.tokenizers['TYPE'].get_token('auto'), is_reserved=False, parent=record_type)
                 return
@@ -503,11 +532,11 @@ class NodeHandler:
                     elif record_match is not None:
                         self.handle_type(ast_item, record_elements, children[record_match[1]:], recursion_level + 1)
                     else:
-                        record_type = Node(self.tokenizers['RES'].get_token('TYPE'), is_reserved=True, parent=record_elements)
-                        Node(self.tokenizers['TYPE'].get_token(typ), is_reserved=False, parent=record_type)
+                        self.extract_builtin_type(typ, record_elements)
+                        
 
 
-        elif canonical_type.kind == TypeKind.CONSTANTARRAY or canonical_type.kind == TypeKind.VARIABLEARRAY:
+        elif canonical_type.kind in [TypeKind.CONSTANTARRAY, TypeKind.VARIABLEARRAY, TypeKind.INCOMPLETEARRAY, TypeKind.DEPENDENTSIZEDARRAY]:
             array = Node(self.tokenizers['RES'].get_token('TYPE_ARRAY'), is_reserved=True, parent=parent_node)
 
             if canonical_type.get_array_element_type().kind == TypeKind.RECORD:
@@ -522,13 +551,16 @@ class NodeHandler:
                 if array_type.kind == TypeKind.RECORD:
                     self.handle_type(ast_item, array, list(ast_item.get_children()), recursion_level)
                 else:
-                    type_node = Node(self.tokenizers['RES'].get_token('TYPE'), is_reserved=True, parent=array)
-                    Node(self.tokenizers['TYPE'].get_token(array_type.spelling), is_reserved=False, parent=type_node)
+                    self.extract_builtin_type(array_type.spelling, array)
+                    # type_node = Node(self.tokenizers['RES'].get_token('TYPE'), is_reserved=True, parent=array)
+                    # print(array_type.spelling)
+                    # Node(self.tokenizers['TYPE'].get_token(array_type.spelling), is_reserved=False, parent=type_node)
 
             else:
-                type_node = Node(self.tokenizers['RES'].get_token('TYPE'), is_reserved=True, parent=array)
+                self.extract_builtin_type(canonical_type.get_array_element_type().spelling, parent=array)
                 # print(canonical_type.get_array_element_type().spelling)
-                Node(self.tokenizers['TYPE'].get_token(canonical_type.get_array_element_type().spelling), is_reserved=False, parent=type_node)
+                # type_node = Node(self.tokenizers['RES'].get_token('TYPE'), is_reserved=True, parent=array)
+                # Node(self.tokenizers['TYPE'].get_token(canonical_type.get_array_element_type().spelling), is_reserved=False, parent=type_node)
 
 
             array_sizes_node = Node(self.tokenizers['RES'].get_token('ARRAY_SIZES'), is_reserved=True, parent=array)
@@ -561,28 +593,34 @@ class NodeHandler:
 
 
             if not has_type:
-                type_node = Node(self.tokenizers['RES'].get_token('TYPE'), is_reserved=True, parent=value_ref)
-                Node(self.tokenizers['TYPE'].get_token(ast_item.type.get_canonical().spelling.replace('const', '').replace('&', '').strip()), is_reserved=False, parent=type_node)
+                self.extract_builtin_type(ast_item.type.get_canonical().spelling, value_ref)
+                
 
 
         # For example: type parameters const As&... have canonical type spelling type-parameter-0-0
-        elif canonical_type.kind == TypeKind.UNEXPOSED:
+        elif canonical_type.kind in [TypeKind.UNEXPOSED, TypeKind.TYPEDEF, TypeKind.ENUM]:
             # print(ast_item.type.spelling)
             type_node = Node(self.tokenizers['RES'].get_token('TYPE_REF'), is_reserved=True, parent=parent_node)
-            if function_type:
+            if function_type or canonical_type.kind == TypeKind.TYPEDEF:
                 Node(self.tokenizers['NAME'].get_token(canonical_type.spelling.replace('const', '').strip()), is_reserved=False, parent=type_node)    
             else:
                 Node(self.tokenizers['NAME'].get_token(ast_item.type.spelling.replace('const', '').strip()), is_reserved=False, parent=type_node)
 
-
-        else:
+        elif canonical_type.kind != TypeKind.INVALID:
             type_node = Node(self.tokenizers['RES'].get_token('TYPE'), is_reserved=True, parent=parent_node)
 
             # if type_def:
             # print(ast_item.type.spelling, canonical_type.spelling, ast_item.kind, ast_item.spelling, [t.spelling for t in ast_item.get_tokens()])
 
-
+            if canonical_type.spelling.replace('const', '').strip() not in self.builtin_types:
+                # print(canonical_type.get_result().spelling, [t.spelling for t in ast_item.get_tokens()])
+                print(canonical_type.spelling.replace('const', '').strip(), canonical_type.kind, [t.spelling for t in ast_item.get_tokens()])
+            # print(canonical_type.spelling.replace('const', '').strip(), parent_node)
             Node(self.tokenizers['TYPE'].get_token(canonical_type.spelling.replace('const', '').strip()), is_reserved=False, parent=type_node)
+
+        else:
+            type_node = Node(self.tokenizers['RES'].get_token('TYPE'), is_reserved=True, parent=parent_node)
+            Node(self.tokenizers['TYPE'].get_token('auto'), is_reserved=False, parent=type_node)
                     
                     
                 # print(ast_item.type.spelling, [(c.spelling, c.type.spelling, c.kind.name) for c in ast_item.get_children()])
@@ -621,6 +659,28 @@ class NodeHandler:
 
 
         # print(ast_item.spelling, [(c.spelling, c.type.spelling, c.kind.name) for c in ast_item.get_children()])
+
+    def extract_builtin_type(self, typ, parent):
+        for _ in range(len(re.findall('\*', typ))):
+            parent = Node(self.tokenizers['RES'].get_token('POINTER'), is_reserved=True, parent=parent)
+
+        typ = typ.replace('*', '').replace('&', '').replace('const', '').strip()
+
+        if typ.isdigit():
+            type_node = Node(self.tokenizers['RES'].get_token('INTEGER_LITERAL'), is_reserved=True, parent=parent)
+            Node(self.tokenizers['LITERAL'].get_token(typ), is_reserved=False, parent=type_node)
+
+        elif typ in self.builtin_types:
+            record_type = Node(self.tokenizers['RES'].get_token('TYPE'), is_reserved=True, parent=parent)
+            Node(self.tokenizers['TYPE'].get_token(typ), is_reserved=False, parent=record_type)
+
+        elif 'type-parameter' in typ:
+            record_type = Node(self.tokenizers['RES'].get_token('TYPE'), is_reserved=True, parent=parent)
+            Node(self.tokenizers['TYPE'].get_token('T'), is_reserved=False, parent=record_type)
+            
+        else:
+            record_type = Node(self.tokenizers['RES'].get_token('TYPE_REF'), is_reserved=True, parent=parent)
+            Node(self.tokenizers['NAME'].get_token(typ), is_reserved=False, parent=record_type)
             
 
 

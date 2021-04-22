@@ -1,6 +1,7 @@
 import argparse
 from AST_parser import AstParser
 from AST_to_code import AstToCodeParser
+from tester import Tester
 import multiprocessing
 
 
@@ -11,7 +12,7 @@ def main():
     args_parser.add_argument('method',
                              metavar='method',
                              type=str,
-                             help='The parse method: AST or code',
+                             help='The parse method: AST, code or roundtrip',
                              default='AST')
 
     args_parser.add_argument('-csv', '--csv_file_path',
@@ -110,8 +111,23 @@ def main():
         print('Input folder: ' + str(input_folder))
         ast_to_code_parser = AstToCodeParser(input_folder, output_folder, csv_file_path, use_compression, processes_num, tokenized)
         ast_to_code_parser.parse_asts_to_code()
+    elif parse_method == 'roundtrip':
+        input_folder = args.input_folder
+        split_terminals = args.split_terminals
+        ast_parser = AstParser(libclang_path, csv_file_path, input_folder, use_compression, processes_num, split_terminals, tokenized)
+        ast_parser.parse_csv()
+
+        ast_to_code_parser = AstToCodeParser(input_folder, output_folder, csv_file_path, use_compression, processes_num, tokenized)
+        ast_to_code_parser.parse_asts_to_code()
+
+        tester = Tester()
+        tester.test_program_compiles()
+
+
+
+
     else:
-        print('Please choose a valid method: AST or code')
+        print('Please choose a valid method: AST, code or round trip')
 
 
 
