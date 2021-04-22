@@ -14,6 +14,7 @@ def roundtrip_mpi(ast_folder, code_folder, programs_csv_path, libclang_path, use
     compile_folder = os.path.join(code_folder, 'compiled/')
 
     # Create output directory if it does not exist yet
+    os.makedirs(ast_folder, exist_ok=True)
     os.makedirs(code_folder, exist_ok=True)
     os.makedirs(os.path.join(ast_folder, 'asts/'), exist_ok=True)
     os.makedirs(os.path.join(ast_folder, 'reserved_tokens/'), exist_ok=True)
