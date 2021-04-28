@@ -59,7 +59,7 @@ class AstToCodeParser:
                 return self.tokenizers['RES'].get_label(node.token)
             else:
                 parent_label = self.tokenizers['RES'].get_label(node.parent.token)
-                if 'LITERAL' in parent_label:   
+                if 'LITERAL' in parent_label: 
                     return self.tokenizers['LITERAL'].get_label(node.token)      
                 elif 'TYPE' == parent_label:
                     return self.tokenizers['TYPE'].get_label(node.token)
@@ -139,6 +139,7 @@ class AstToCodeParser:
         declarations = []
         acc_spec = ''
         var_type = ''
+        var_name = 'VAR_NAME_PLACEHOLDER'
 
         # If the variable is an array, this is will be filled
         array_sizes = []
@@ -181,7 +182,6 @@ class AstToCodeParser:
         # append initial values if set
         if len(declarations) > 0:
             var_value += ' = ' + ' '.join(declarations)
-
 
         # Combine the type of the variable with the name, dimensions and initial value
         return f'{acc_spec}{var_type} {var_name}{"".join(ref_dims)}{var_value}'
