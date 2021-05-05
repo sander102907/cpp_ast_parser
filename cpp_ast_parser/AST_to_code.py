@@ -1,7 +1,7 @@
 from anytree.importer import JsonImporter
 from anytree import RenderTree
 from anytree.search import find
-from utils import assignment_operators, add_includes_usings
+from cpp_ast_parser.utils import assignment_operators, add_includes_usings
 import threading
 import multiprocessing
 import queue as queue
@@ -10,7 +10,7 @@ from tqdm import tqdm
 import json
 import re
 import pandas as pd
-from tokenizer import Tokenizer
+from cpp_ast_parser.tokenizer import Tokenizer
 import gzip
 
 class AstToCodeParser:

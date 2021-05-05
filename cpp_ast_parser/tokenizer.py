@@ -39,7 +39,7 @@ class Tokenizer:
             if token in self.label_dict:
                 return self.label_dict[token]
             else:
-                return ''
+                return token
         else:
             return token
 
