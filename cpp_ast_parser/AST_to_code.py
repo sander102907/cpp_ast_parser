@@ -531,7 +531,10 @@ class AstToCodeParser:
             code += '...'
 
         elif self.get_label(node) == 'CXX_THIS_EXPR':
-            code += 'this->'
+            if self.get_label(node.parent) == 'MEMBER_REF_EXPR':
+                code += 'this->'
+            else:
+                code += 'this'
 
 
         elif self.get_label(node) == 'SWITCH_STMT':
@@ -594,9 +597,12 @@ class AstToCodeParser:
                 code += self.parse_node(child)
 
         elif self.get_label(node) == 'LABEL_STMT':
-            code += f'{self.get_label(node.children[0])}:\n'
-            for child in node.children[1:]:
-                code += self.parse_node(child)
+            for label_child in node.children:
+                if self.get_label(label_child) == 'NAME':
+                    label_name = self.merge_terminals(label_child.children)
+                    code += f'{label_name}:\n'
+                else:
+                    code += self.parse_node(label_child)
 
         # elif self.get_label(node) == 'TYPE_KIND':
         #     code += self.get_type(node.children[0])

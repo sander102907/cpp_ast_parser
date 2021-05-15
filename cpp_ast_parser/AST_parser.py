@@ -99,14 +99,16 @@ class AstParser:
         # Create temp file path for each trhead for clang to save in memory contents
         temp_file_path = f'{self.output_folder}tmp{thread_nr}.cpp'
 
-        # Preprocess the program, expand the macros
-        preprocessed_program = self.preprocess_program(program, temp_file_path, imports)
-
         # Set arguments and add compiler system include paths (with ccsyspath)
         args    = '-x c++ --std=c++20'.split()
         syspath = ccsyspath.system_include_paths('clang')
         incargs = [ b'-I' + inc for inc in syspath ]
         args    = args + incargs
+
+        # Preprocess the program, expand the macros
+        preprocessed_program = self.preprocess_program(program, temp_file_path, imports)
+
+        # print(preprocessed_program)
 
         # Parse the program to a clang AST
         tu = self.index.parse(
@@ -146,6 +148,14 @@ class AstParser:
         return cursor_items
 
     def preprocess_program(self, program, temp_file_path, imports):
+        # Things that are either already defined in other files and hence will not preprocess correctly
+        # Or are defined in other version of C (e.g. VS code extension) and needs to be transformed to format that g++ understands
+        manual_defines = [('EOF', '(-1)'), ('__int64', 'long long'), ('%I64d', '%lld')]
+
+        for k,v in manual_defines:
+            program = program.replace(k, v)
+
+
         # Create a temporary file to store program in
         temp_file = open(temp_file_path, 'w')
         temp_file.write(program)
@@ -327,6 +337,14 @@ class AstParser:
 
                     self.parse_item(child, parent_node, program)
 
+    def add_nonechildren(self, node):
+        for child in node.children:
+            self.add_nonechildren(child)
+            if child.res and len(child.children) == 0:
+                    Node('EMPTY_RES_CHILD', is_reserved=True, parent=child)
+
+        return node
+
 
     def thread_parser(self, file_queue, pbar, thread_nr):
         while not file_queue.empty():
@@ -335,6 +353,7 @@ class AstParser:
             try:
                 # Parse the AST tree for the program
                 ast = self.parse_ast(code, imports, thread_nr)
+                # ast = self.add_nonechildren(ast)
             except Exception as e:
                 print(f'Skipping file due to parsing failing: {program_id} - {e}')
                 pbar.set_description(f'{datetime.now()}')
@@ -411,7 +430,7 @@ class AstParser:
 
             # Fill the queue with files.
             for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
-                # if program[1]['solutionId'] == 44591144:
+                # if program[1]['solutionId'] == 123:
                     file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
                     # break
             

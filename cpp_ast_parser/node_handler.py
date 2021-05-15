@@ -15,7 +15,14 @@ class NodeHandler:
                             'tuple', 'multiset', 'unsigned long', 'unsigned char', 'signed char', 'signed int', 'short int',
                             'unsigned short int', 'signed short int', 'long int', 'signed long int', 'unsigned long int', 'long long int',
                             'unsigned long long int', 'float', 'wchar_t', 'bitset', 'unordered_set', 'basic_string', 'array', 'forward_list',
-                            'shared_ptr', 'std::__cxx11::basic_string<char>']
+                            'shared_ptr', 'std::__cxx11::basic_string<char>', 'std::basic_string<char>', 'std::string', 'vector<int>', 
+                            'vector<long long>', 'queue<int>', 'std::pair<int, int>', 'std::vector<int, std::allocator<int>>', 'pair<int, int>',
+                            'std::vector<std::pair<int, int>, std::allocator<std::pair<int, int>>>::value_type', 'std::pair<long long, long long>',
+                            'std::vector<long long, std::allocator<long long>>', 'vector<bool>', 'stack<int>', 'vector<vector<int>>',
+                            'std::vector<std::pair<long long, long long>, std::allocator<std::pair<long long, long long>>>::value_type',
+                            'std::basic_stringstream<char>', 'int64_t', 'vector<std::string>', 'pair<long long, long long>', 'vector<pair<int, int>>',
+                            'greater<int>'
+                            ]
 
     def handle_typedef(self, ast_item, parent_node):
         # Set top node as TYPEDEF_DECL
@@ -424,7 +431,8 @@ class NodeHandler:
 
     def handle_label_stmt(self, ast_item, parent_node):
         stmt = Node(self.tokenizers['RES'].get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
-        self.create_terminal_nodes(ast_item.spelling, ast_item, stmt)
+        name = Node(self.tokenizers['RES'].get_token('NAME'), is_reserved=True, parent=parent_node)
+        self.create_terminal_nodes(ast_item.spelling, ast_item, name)
         # Node(self.tn.get_token(ast_item.spelling), is_reserved=False, parent=stmt)
         return stmt
 
