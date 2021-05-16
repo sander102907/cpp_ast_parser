@@ -21,7 +21,7 @@ class NodeHandler:
                             'std::vector<long long, std::allocator<long long>>', 'vector<bool>', 'stack<int>', 'vector<vector<int>>',
                             'std::vector<std::pair<long long, long long>, std::allocator<std::pair<long long, long long>>>::value_type',
                             'std::basic_stringstream<char>', 'int64_t', 'vector<std::string>', 'pair<long long, long long>', 'vector<pair<int, int>>',
-                            'greater<int>'
+                            'greater<int>', 'std::pair', 'std::greater'
                             ]
 
     def handle_typedef(self, ast_item, parent_node):
@@ -274,7 +274,8 @@ class NodeHandler:
                 
                 # tokens = [self.tn.get_label(t.token) for t in parent_node.parent.children]
                 # self.create_terminal_nodes(item_type, ast_item, ref, tokens)
-                Node(self.tokenizers['NAME'].get_token(item_type), is_reserved=False, parent=ref)
+                self.extract_builtin_type(item_type, ref)
+                # Node(self.tokenizers['NAME'].get_token(item_type), is_reserved=False, parent=ref)
                 return Node(self.tokenizers['RES'].get_token('ARGUMENTS'), is_reserved=True, parent=func_call)
             else:
                 Node(self.tokenizers['NAME'].get_token(func_name), is_reserved=False, parent=ref)
@@ -477,17 +478,22 @@ class NodeHandler:
 
             if children[0].kind == CursorKind.TYPE_REF:
                 record_type = Node(self.tokenizers['RES'].get_token('TYPE_REF'), is_reserved=True, parent=record)
-                Node(self.tokenizers['NAME'].get_token(children[0].type.get_canonical().spelling), is_reserved=False, parent=record_type)
+                node_type = children[0].type.get_canonical().spelling
+                self.extract_builtin_type(node_type, record_type)
+                # Node(self.tokenizers['NAME'].get_token(children[0].type.get_canonical().spelling), is_reserved=False, parent=record_type)
             elif len(children[0].spelling) > 0: # children[0].kind == CursorKind.TEMPLATE_REF:
                 if children[0].kind == CursorKind.TEMPLATE_REF:
                     self.extract_builtin_type(children[0].spelling, record)
-                    # record_type = Node(self.tokenizers['RES'].get_token('TYPE'), is_reserved=True, parent=record)
-                    # if children[0].spelling not in self.builtin_types:
-                    #     print(children[0].spelling)
-                    # Node(self.tokenizers['TYPE'].get_token(children[0].spelling), is_reserved=False, parent=record_type)
                 else:
                     record_type = Node(self.tokenizers['RES'].get_token('TYPE_REF'), is_reserved=True, parent=record)
-                    Node(self.tokenizers['NAME'].get_token(children[0].spelling), is_reserved=False, parent=record_type)
+
+                    node_type = children[0].spelling
+
+                    self.extract_builtin_type(node_type, record_type)
+                    # if node_type in self.builtin_types:
+                    #     Node(self.tokenizers['TYPE'].get_token(node_type), is_reserved=False, parent=record_type)    
+                    # else:
+                    #     Node(self.tokenizers['NAME'].get_token(node_type), is_reserved=False, parent=record_type)   
             else:
                 
                 record_type = Node(self.tokenizers['RES'].get_token('TYPE'), is_reserved=True, parent=record)
@@ -536,7 +542,8 @@ class NodeHandler:
                         type_ref = Node('TYPE_REF', is_reserved=True, parent=record_elements)
                             # print(type_ref_match.type.get_canonical().spelling, type_ref_match.type.spelling)
 
-                        Node(self.tokenizers['NAME'].get_token(type_ref_match.type.spelling), is_reserved=False, parent=type_ref)
+                        self.extract_builtin_type(type_ref_match.type.spelling, type_ref)
+                        # Node(self.tokenizers['NAME'].get_token(type_ref_match.type.spelling), is_reserved=False, parent=type_ref)
                     elif record_match is not None:
                         self.handle_type(ast_item, record_elements, children[record_match[1]:], recursion_level + 1)
                     else:
@@ -597,7 +604,8 @@ class NodeHandler:
                 elif child.kind == CursorKind.TYPE_REF:
                     has_type = True
                     type_ref = Node(self.tokenizers['RES'].get_token('TYPE_REF'), is_reserved=True, parent=value_ref)
-                    Node(self.tokenizers['NAME'].get_token(child.type.spelling), is_reserved=False, parent=type_ref)
+                    self.extract_builtin_type(child.type.spelling, type_ref)
+                    # Node(self.tokenizers['NAME'].get_token(child.type.spelling), is_reserved=False, parent=type_ref)
 
 
             if not has_type:
@@ -610,9 +618,16 @@ class NodeHandler:
             # print(ast_item.type.spelling)
             type_node = Node(self.tokenizers['RES'].get_token('TYPE_REF'), is_reserved=True, parent=parent_node)
             if function_type or canonical_type.kind == TypeKind.TYPEDEF:
-                Node(self.tokenizers['NAME'].get_token(canonical_type.spelling.replace('const', '').strip()), is_reserved=False, parent=type_node)    
+                node_type = canonical_type.spelling.replace('const', '').strip()
+                self.extract_builtin_type(node_type, type_node)
+                # if node_type in self.builtin_types:
+                #     Node(self.tokenizers['TYPE'].get_token(node_type), is_reserved=False, parent=type_node)    
+                # else:
+                #     Node(self.tokenizers['NAME'].get_token(node_type), is_reserved=False, parent=type_node)    
             else:
-                Node(self.tokenizers['NAME'].get_token(ast_item.type.spelling.replace('const', '').strip()), is_reserved=False, parent=type_node)
+                node_type = ast_item.type.spelling.replace('const', '').strip()
+                self.extract_builtin_type(node_type, type_node)
+                # Node(self.tokenizers['NAME'].get_token(node_type), is_reserved=False, parent=type_node)
 
         elif canonical_type.kind != TypeKind.INVALID:
             type_node = Node(self.tokenizers['RES'].get_token('TYPE'), is_reserved=True, parent=parent_node)
@@ -673,6 +688,9 @@ class NodeHandler:
             parent = Node(self.tokenizers['RES'].get_token('POINTER'), is_reserved=True, parent=parent)
 
         typ = typ.replace('*', '').replace('&', '').replace('const', '').strip()
+
+        # Remove spaces between non-alphanumeric characters and commas
+        typ = re.sub('\s*([^A-Za-z,])\s*', r'\1', typ)
 
         if typ.isdigit():
             type_node = Node(self.tokenizers['RES'].get_token('INTEGER_LITERAL'), is_reserved=True, parent=parent)
