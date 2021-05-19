@@ -429,11 +429,22 @@ class AstToCodeParser:
                             if index < len(child.children) - 1:
                                 code += ', '
                 code += ')'
+
+        elif self.get_label(node) == 'TYPE_CALL_EXPR':
+            for child in node.children:
+                if self.get_label(child) == 'TYPE_KIND':
+                    code += self.get_type(child.children[0]) + '('
+                elif self.get_label(child) == 'ARGUMENTS':
+                    for index, arg in enumerate(child.children):
+                        code += self.parse_node(arg)
+                        if index < len(child.children) - 1:
+                            code += ', '
+            code += ')'
         
         elif self.get_label(node) == 'TYPEDEF_DECL':
             for child in node.children:
                 if self.get_label(child) == 'TYPE_DEF':
-                    code += f'typedef {self.get_type(child.children[0].children[0])} '
+                    code += f'typedef {self.get_type(child.children[0])} '
                 elif self.get_label(child) == 'IDENTIFIER':
                     code += self.get_label(child.children[0])
 
@@ -499,7 +510,7 @@ class AstToCodeParser:
         elif self.get_label(node) == 'TEMPLATE_TYPE_PARAMETER':
             code += self.get_temp_type_param(node)
         elif self.get_label(node) == 'CXX_FUNCTIONAL_CAST_EXPR':
-            code += f'{self.get_label(node.children[0].children[0])}('
+            code += f'{ self.get_type(node.children[0].children[0])}('
             for child in node.children[1:]:
                 code += self.parse_node(child)
             
