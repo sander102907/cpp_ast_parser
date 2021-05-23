@@ -473,10 +473,10 @@ class NodeHandler:
 
     def build_type_node(self, type_string, record_type, parent_node):
         if record_type:
-            type_record = Node('TYPE_RECORD', is_reserved=True, parent=parent_node)
+            type_record = Node(self.tokenizers['RES'].get_token('TYPE_RECORD'), is_reserved=True, parent=parent_node)
             self.create_type_node(type_string, type_record)
             
-            return Node('TYPE_RECORD_ELEMENTS', is_reserved=True, parent=type_record)
+            return Node(self.tokenizers['RES'].get_token('TYPE_RECORD_ELEMENTS'), is_reserved=True, parent=type_record)
         
         else:
             self.create_type_node(type_string, parent_node)

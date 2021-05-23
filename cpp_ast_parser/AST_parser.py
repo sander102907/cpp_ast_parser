@@ -341,7 +341,7 @@ class AstParser:
         for child in node.children:
             self.add_nonechildren(child)
             if child.res and len(child.children) == 0:
-                    Node('EMPTY_RES_CHILD', is_reserved=True, parent=child)
+                    Node(self.tokenizers['RES'].get_token('EMPTY_RES_CHILD'), is_reserved=True, parent=child)
 
         return node
 
