@@ -337,11 +337,12 @@ class AstParser:
 
                     self.parse_item(child, parent_node, program)
 
-    def add_nonechildren(self, node):
+    def remove_args_no_children(self, node):
         for child in node.children:
-            self.add_nonechildren(child)
-            if child.res and len(child.children) == 0:
-                    Node(self.tokenizers['RES'].get_token('EMPTY_RES_CHILD'), is_reserved=True, parent=child)
+            if child.res and self.tokenizers['RES'].get_label(child.token) == 'ARGUMENTS' and len(child.children) == 0:
+                child.parent = None
+            else:
+                self.remove_args_no_children(child)
 
         return node
 
@@ -353,7 +354,7 @@ class AstParser:
             try:
                 # Parse the AST tree for the program
                 ast = self.parse_ast(code, imports, thread_nr)
-                # ast = self.add_nonechildren(ast)
+                ast = self.remove_args_no_children(ast)
             except Exception as e:
                 print(f'Skipping file due to parsing failing: {program_id} - {e}')
                 pbar.set_description(f'{datetime.now()}')
@@ -430,7 +431,7 @@ class AstParser:
 
             # Fill the queue with files.
             for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
-                # if program[1]['solutionId'] == 44649503:
+                if program[1]['solutionId'] == 54899074:
                     file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
                     # break
             
