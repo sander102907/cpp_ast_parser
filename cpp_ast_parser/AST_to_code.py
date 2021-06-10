@@ -212,7 +212,7 @@ class AstToCodeParser:
                     array_type = self.get_type(array_child)
                 elif self.get_label(array_child) == 'ARRAY_SIZES':
                     for array_size in array_child.children:
-                        array_sizes.append(self.get_label(array_size.children[0]))
+                        array_sizes.append(self.parse_node(array_size))
 
             type_string += array_type
 
@@ -345,15 +345,19 @@ class AstToCodeParser:
             code += ')'
             for child in node.children[1:]:
                 code += self.parse_node(child)
-        elif self.get_label(node) in ['DECL_REF_EXPR', 'MEMBER_REF_EXPR', 'MEMBER_REF', 'LABEL_REF'] or 'LITERAL' in self.get_label(node):
+        elif self.get_label(node) in ['DECL_REF_EXPR', 'MEMBER_REF_EXPR', 'MEMBER_REF', 'LABEL_REF', 'REF', 'REF_BUILTIN'] or 'LITERAL' in self.get_label(node):
             for child in node.children[1:]:
                 code += self.parse_node(child)
+                code += '.'
 
             if self.get_label(node) == 'MEMBER_REF_EXPR' and len(node.children) > 1 \
                 and self.get_label(node.children[1]) != 'CXX_THIS_EXPR': #node.parent.parent) == 'REF':
                 code += '.'
 
             code += self.get_label(node.children[0])
+
+            # if self.get_label(node.parent) in ['REF', 'REF_BUILTIN']:
+            #     code += '.'
 
 
         elif self.get_label(node) == 'IF_STMT':
@@ -414,16 +418,18 @@ class AstToCodeParser:
                 code += self.get_call_exp_operator(node)
 
             else:
-                for child in node.children:
-                    if self.get_label(child) != 'NAME' and self.get_label(child) != 'ARGUMENTS':
+                for idx, child in enumerate(reversed(node.children)):
+                    if self.get_label(child) != 'ARGUMENTS':
                         code += self.parse_node(child)
-                        if self.get_label(child) != 'TYPE_REF':
+                        if self.get_label(child) != 'TYPE_REF' and idx < len(node.children) - 1:
                             code += '.'
 
-                for child in node.children:
-                    if self.get_label(child) == 'NAME':
-                        code += self.merge_terminals(child.children) + '('
-                    elif self.get_label(child) == 'ARGUMENTS':
+                code += '('
+
+                for child in node.children:                        
+                # # for child in node.children:
+                # #     if self.get_label(child) in ['NAME', 'REF', 'REF_BUILTIN']:
+                    if self.get_label(child) == 'ARGUMENTS':
                         for index, arg in enumerate(child.children):
                             code += self.parse_node(arg)
                             if index < len(child.children) - 1:
@@ -681,7 +687,7 @@ class AstToCodeParser:
         file_paths = []
 
         # Read csv file in chunks (may be very large)
-        asts = pd.read_csv(f'{self.input_folder}asts.csv{".bz2" if self.use_compression else ""}', chunksize=1e5)
+        asts = pd.read_csv(f'{self.input_folder}asts0.csv{".bz2" if self.use_compression else ""}', chunksize=1e5)
 
         # Read metadata file with imports
         print('loading csv file with imports...')

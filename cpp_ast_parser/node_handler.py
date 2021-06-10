@@ -1,13 +1,16 @@
 import utils
-from clang.cindex import CursorKind, AccessSpecifier, TypeKind
+import clang.cindex
+from clang.cindex import CursorKind, AccessSpecifier, TypeKind, TokenKind
 from tree_node import Node
 import re
 
 class NodeHandler:
-    def __init__(self, tokenizers, split_terminals):
+    def __init__(self, tokenizers, split_terminals, cindex):
         # Set reserved label and non reserved label tokenizers
         self.tokenizers = tokenizers
         self.split_terminals = split_terminals
+
+        self.cindex = cindex
 
         self.builtin_types = ['int', 'long', 'long long', 'double', 'long double', 'unsigned long long', 'vector',
                             'void', 'map', 'auto', 'short', 'deque', 'bool', 'pair', 'int32_t', 'queue', 'priority_queue',
@@ -15,7 +18,7 @@ class NodeHandler:
                             'tuple', 'multiset', 'unsigned long', 'unsigned char', 'signed char', 'signed int', 'short int',
                             'unsigned short int', 'signed short int', 'long int', 'signed long int', 'unsigned long int', 'long long int',
                             'unsigned long long int', 'float', 'wchar_t', 'bitset', 'unordered_set', 'basic_string', 'array', 'forward_list',
-                            'shared_ptr', '__cxx11::basic_string', 'basic_string', 'string', 'allocator']
+                            'shared_ptr', '__cxx11::basic_string', 'basic_string', 'string', 'allocator', 'less']
                             
 
     def handle_typedef(self, ast_item, parent_node):
@@ -215,60 +218,79 @@ class NodeHandler:
             else:
                 func_name += '_POST'
 
-        special_call_expr = ['vector', 'unordered_map', 'pair', 'map', 'queue', 'greater', 'priority_queue', 'bitset', 'multiset']
+        special_call_expr = ['vector', 'unordered_map', 'pair', 'map', 'queue', 'greater', 'priority_queue', 'bitset', 'multiset', 'set', 'string']
 
-        if func_name in special_call_expr and len(list(ast_item.get_children())) == 0:
-            return parent_node
-        else:
-            if func_name in special_call_expr \
-            or (ast_item.referenced and ast_item.referenced.kind == CursorKind.CONSTRUCTOR and len(list(ast_item.get_children())) > 0):
-                # Do not call expressions with const before it
-                item_type = ast_item.type.spelling.replace('const', '')
+        # if func_name in special_call_expr and len(list(ast_item.get_children())) == 0:
+        #     print(func_name, ast_item.spelling, program, ast_item.extent)
+        #     return parent_node
+        # else:
+        if func_name in special_call_expr \
+        or (ast_item.referenced and ast_item.referenced.kind == CursorKind.CONSTRUCTOR and len(list(ast_item.get_children())) > 0):
 
-                if func_name == 'pair' and len(list(ast_item.get_children())) <= 1:
-                    return parent_node
-                elif func_name == 'pair':
-                    func_call = Node(self.tokenizers['RES'].get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
-                    ref = Node(self.tokenizers['RES'].get_token('NAME'), is_reserved=True, parent=func_call)
-                    Node(self.tokenizers['NAME'].get_token('make_pair'), is_reserved=False, parent=ref) 
-                else:
-                    func_call = Node(self.tokenizers['RES'].get_token('TYPE_CALL_EXPR'), is_reserved=True, parent=parent_node)
-                    type_kind = Node(self.tokenizers['RES'].get_token('TYPE_KIND'), is_reserved=True, parent=func_call)
-                    self.extract_builtin_type(item_type, type_kind)
+            # Do not call expressions with const before it
+            item_type = ast_item.type.spelling.replace('const', '')
 
-
-                return Node(self.tokenizers['RES'].get_token('ARGUMENTS'), is_reserved=True, parent=func_call)
-
-            else:
+            if func_name == 'pair' and len(list(ast_item.get_children())) <= 1:
+                return parent_node
+            elif func_name == 'pair':
                 func_call = Node(self.tokenizers['RES'].get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
-                ref = Node(self.tokenizers['RES'].get_token('NAME'), is_reserved=True, parent=func_call)
+                ref = Node(self.tokenizers['RES'].get_token('REF_BUILTIN'), is_reserved=True, parent=func_call)
+                Node(self.tokenizers['NAME_BUILTIN'].get_token('make_pair'), is_reserved=False, parent=ref) 
+            else:
+                func_call = Node(self.tokenizers['RES'].get_token('TYPE_CALL_EXPR'), is_reserved=True, parent=parent_node)
+                type_kind = Node(self.tokenizers['RES'].get_token('TYPE_KIND'), is_reserved=True, parent=func_call)
 
-                if len(list(ast_item.get_arguments())) > 0 :
-                    arg_node =  Node(self.tokenizers['RES'].get_token('ARGUMENTS'), is_reserved=True, parent=func_call)
-                    
-                for arg_item in ast_item.get_arguments():
-                    parse_item(arg_item, arg_node, program)
+                if func_name == 'set':
+                    item_type = f"set<{item_type.split('<')[-1].split(',')[0].replace('>', '').strip()}>"
+                self.extract_builtin_type(item_type, type_kind)
 
-                Node(self.tokenizers['NAME'].get_token(func_name), is_reserved=False, parent=ref)
+            return Node(self.tokenizers['RES'].get_token('ARGUMENTS'), is_reserved=True, parent=func_call)
 
-            return func_call
-            
+        else:
+            func_call = Node(self.tokenizers['RES'].get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
+
+            if ast_item.referenced is not None and not "tmp" in str(ast_item.referenced.location):
+                ref = Node(self.tokenizers['RES'].get_token('REF_BUILTIN'), is_reserved=True, parent=func_call)
+                Node(self.tokenizers['NAME_BUILTIN'].get_token(func_name), is_reserved=False, parent=ref)
+            else:
+                ref = Node(self.tokenizers['RES'].get_token('REF'), is_reserved=True, parent=func_call)
+                Node(self.tokenizers['NAME'].get_token(func_name), is_reserved=False, parent=ref) 
+
+            if len(list(ast_item.get_arguments())) > 0 :
+                arg_node =  Node(self.tokenizers['RES'].get_token('ARGUMENTS'), is_reserved=True, parent=func_call)
+                
+            for arg_item in ast_item.get_arguments():
+                parse_item(arg_item, arg_node, program)
+
+        return func_call
+        
 
 
     def handle_reference(self, ast_item, parent_node):
         if parent_node:
             parent_func_name = ['' if n.children[0].res else self.tokenizers['NAME'].get_label(n.children[0].token)
                                 for n in parent_node.children
-                                if self.tokenizers['RES'].get_label(n.token) == 'NAME' and self.tokenizers['RES'].get_label(parent_node.token) != 'DECLARATOR']
+                                if self.tokenizers['RES'].get_label(n.token) in ['NAME', 'REF', 'REF_BUILTIN'] and self.tokenizers['RES'].get_label(parent_node.token) == 'CALL_EXPR']
         else:
             parent_func_name = []
 
         if ast_item.spelling \
-        and ast_item.spelling not in parent_func_name:
+        and ast_item.spelling not in parent_func_name \
+        and not (self.tokenizers['RES'].get_label(parent_node.token) == 'DECLARATOR' and 'REF' in ast_item.kind.name):
+            # print('AFTER: ', ast_item.spelling, ast_item.extent)
+            if 'tmp' not in str(ast_item.referenced.location):
+                reference = Node(self.tokenizers['RES'].get_token('REF_BUILTIN'), True, parent=parent_node)
+                Node(self.tokenizers['NAME_BUILTIN'].get_token(ast_item.spelling), False, parent=reference)
+            else:
+                reference = Node(self.tokenizers['RES'].get_token('REF'), True, parent=parent_node)
+                Node(self.tokenizers['NAME'].get_token(ast_item.spelling), False, parent=reference)
+            return reference
 
-            reference = Node(self.tokenizers['RES'].get_token(ast_item.kind.name), True, parent=parent_node)
-            Node(self.tokenizers['NAME'].get_token(ast_item.spelling), False, parent=reference)
-
+        elif not ast_item.spelling and ast_item.kind == CursorKind.MEMBER_REF_EXPR:
+            tokens = [t.spelling for t in ast_item.get_tokens()]
+            member_ref = tokens[tokens.index('.') + 1]
+            reference = Node(self.tokenizers['RES'].get_token('REF'), is_reserved=True, parent=parent_node)
+            Node(self.tokenizers['NAME'].get_token(member_ref), is_reserved=False, parent=reference)
             return reference
 
 
@@ -402,8 +424,9 @@ class NodeHandler:
             for array_size in re.findall('\[.*?\]', ast_item.type.spelling):
                 # If it does not only consist of numbers then it is a reference to a variable
                 if not all(str(s).isdigit() for s in array_size[1:-1]):
-                    array_size_type = Node(self.tokenizers['RES'].get_token("DECL_REF_EXPR"), is_reserved=True, parent=array_sizes_node)
-                    Node(self.tokenizers['NAME'].get_token(array_size[1:-1]), is_reserved=False, parent=array_size_type)
+                    # array_size_type = Node(self.tokenizers['RES'].get_token("REF"), is_reserved=True, parent=array_sizes_node)
+                    self.extract_variable_array_sizes_subtree(array_size[1:-1], array_sizes_node)
+                    # Node(self.tokenizers['NAME'].get_token(array_size[1:-1]), is_reserved=False, parent=array_size_type)
                 else:
                     array_size_type = Node(self.tokenizers['RES'].get_token("INTEGER_LITERAL"), is_reserved=True, parent=array_sizes_node)
                     Node(self.tokenizers['LITERAL'].get_token(array_size[1:-1]), is_reserved=False, parent=array_size_type)
@@ -414,8 +437,50 @@ class NodeHandler:
         elif canonical_type.kind == TypeKind.LVALUEREFERENCE or canonical_type.kind == TypeKind.RVALUEREFERENCE:
             parent_node = Node(self.tokenizers['RES'].get_token(ast_item.type.kind.name), is_reserved=True, parent=parent_node)
 
-
         self.extract_builtin_type(node_type, parent_node)
+
+
+    def extract_variable_array_sizes_subtree(self, code, parent_node):
+        tu = self.cindex.parse('tmp_array.cpp', args=['-std=c++20'], unsaved_files=[('tmp_array.cpp', code)])
+        tokens = list(tu.get_tokens(extent=tu.cursor.extent))
+        operators = [(t.spelling, idx) for idx, t in enumerate(tokens) if t.kind == TokenKind.PUNCTUATION]
+
+        self.create_subtree(tokens, operators, parent_node)
+
+
+    def create_subtree(self, tokens, operators, parent_node):
+        for op, idx in operators:
+            if idx + 1 < len(tokens) - 1:
+                op_node = Node(self.tokenizers['RES'].get_token(f'BINARY_OPERATOR_{op}'), is_reserved=True, parent=parent_node)
+                t = tokens[idx - 1]
+                if t.kind == TokenKind.IDENTIFIER:
+                    ref = Node(self.tokenizers['RES'].get_token('REF'), is_reserved=True, parent=op_node)
+                    Node(self.tokenizers['NAME'].get_token(t.spelling), is_reserved=False, parent=ref)
+                else:
+                    lit = Node(self.tokenizers['RES'].get_token('INTEGER_LITERAL'), is_reserved=True, parent=op_node)
+                    Node(self.tokenizers['LITERAL'].get_token(t.spelling), is_reserved=False, parent=lit)
+
+                operators.remove((op, idx))
+                self.create_subtree(tokens, operators, op_node)
+            else:
+                op_node = Node(self.tokenizers['RES'].get_token(f'BINARY_OPERATOR_{op}'), is_reserved=True, parent=parent_node)
+                
+                for t in [tokens[idx - 1], tokens[idx + 1]]:
+                    if t.kind == TokenKind.IDENTIFIER:
+                        ref = Node(self.tokenizers['RES'].get_token('REF'), is_reserved=True, parent=op_node)
+                        Node(self.tokenizers['NAME'].get_token(t.spelling), is_reserved=False, parent=ref)
+                    else:
+                        lit = Node(self.tokenizers['RES'].get_token('INTEGER_LITERAL'), is_reserved=True, parent=op_node)
+                        Node(self.tokenizers['LITERAL'].get_token(t.spelling), is_reserved=False, parent=lit)
+
+        if len(tokens) == 1:
+            t = tokens[0]
+            if t.kind == TokenKind.IDENTIFIER:
+                ref = Node(self.tokenizers['RES'].get_token('REF'), is_reserved=True, parent=parent_node)
+                Node(self.tokenizers['NAME'].get_token(t.spelling), is_reserved=False, parent=ref)
+            else:
+                lit = Node(self.tokenizers['RES'].get_token('INTEGER_LITERAL'), is_reserved=True, parent=parent_node)
+                Node(self.tokenizers['LITERAL'].get_token(t.spelling), is_reserved=False, parent=lit)
 
 
     def extract_builtin_type(self, type_string, parent_node):

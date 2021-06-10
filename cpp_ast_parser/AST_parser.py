@@ -76,6 +76,7 @@ class AstParser:
             self.tokenizers = {
                 'RES': Tokenizer(output_folder + f'reserved_tokens/reserved_tokens_{self.rank}.json', tokenized),
                 'NAME': Tokenizer(output_folder + f'name_tokens/name_tokens_{self.rank}.json', tokenized),
+                'NAME_BUILTIN': Tokenizer(output_folder + f'name_tokens/name_builtin_tokens_{self.rank}.json', tokenized),
                 'TYPE': Tokenizer(output_folder + f'type_tokens/type_tokens_{self.rank}.json', tokenized),
                 'LITERAL': Tokenizer(output_folder + f'literal_tokens/literal_tokens_{self.rank}.json', tokenized)
             }
@@ -85,6 +86,7 @@ class AstParser:
             self.tokenizers = {
                 'RES': Tokenizer(output_folder + 'reserved_tokens/reserved_tokens.json', tokenized),
                 'NAME': Tokenizer(output_folder + 'name_tokens.json', tokenized),
+                'NAME_BUILTIN': Tokenizer(output_folder + 'name_builtin_tokens.json', tokenized),
                 'TYPE': Tokenizer(output_folder + 'type_tokens.json', tokenized),
                 'LITERAL': Tokenizer(output_folder + 'literal_tokens.json', tokenized)
             }
@@ -93,7 +95,7 @@ class AstParser:
 
 
         # Create node handler object
-        self.nh = NodeHandler(self.tokenizers, split_terminals)
+        self.nh = NodeHandler(self.tokenizers, split_terminals, self.index)
 
     def parse_ast(self, program, imports, thread_nr):
         # Create temp file path for each trhead for clang to save in memory contents
@@ -431,7 +433,7 @@ class AstParser:
 
             # Fill the queue with files.
             for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
-                if program[1]['solutionId'] == 54899074:
+                # if program[1]['solutionId'] == 44590980:
                     file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
                     # break
             
