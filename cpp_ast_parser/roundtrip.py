@@ -19,6 +19,7 @@ def roundtrip_mpi(ast_folder, code_folder, programs_csv_path, libclang_path, use
     os.makedirs(os.path.join(ast_folder, 'asts/'), exist_ok=True)
     os.makedirs(os.path.join(ast_folder, 'reserved_tokens/'), exist_ok=True)
     os.makedirs(os.path.join(ast_folder, 'name_tokens/'), exist_ok=True)
+    os.makedirs(os.path.join(ast_folder, 'name_builtin_tokens/'), exist_ok=True)
     os.makedirs(os.path.join(ast_folder, 'type_tokens/'), exist_ok=True)
     os.makedirs(os.path.join(ast_folder, 'literal_tokens/'), exist_ok=True)
     os.makedirs(code_folder + 'compiled/', exist_ok=True)
@@ -30,6 +31,7 @@ def roundtrip_mpi(ast_folder, code_folder, programs_csv_path, libclang_path, use
     tokenizers = {
         'RES': Tokenizer(ast_folder + f'reserved_tokens/reserved_tokens_{rank}.json', tokenized),
         'NAME': Tokenizer(ast_folder + f'name_tokens/name_tokens_{rank}.json', tokenized),
+        'NAME_BUILTIN': Tokenizer(ast_folder + f'name_builtin_tokens/name_builtin_tokens_{rank}.json', tokenized),
         'TYPE': Tokenizer(ast_folder + f'type_tokens/type_tokens_{rank}.json', tokenized),
         'LITERAL': Tokenizer(ast_folder + f'literal_tokens/literal_tokens_{rank}.json', tokenized)
     }

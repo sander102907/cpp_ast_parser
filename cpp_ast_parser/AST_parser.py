@@ -76,7 +76,7 @@ class AstParser:
             self.tokenizers = {
                 'RES': Tokenizer(output_folder + f'reserved_tokens/reserved_tokens_{self.rank}.json', tokenized),
                 'NAME': Tokenizer(output_folder + f'name_tokens/name_tokens_{self.rank}.json', tokenized),
-                'NAME_BUILTIN': Tokenizer(output_folder + f'name_tokens/name_builtin_tokens_{self.rank}.json', tokenized),
+                'NAME_BUILTIN': Tokenizer(output_folder + f'name_builtin_tokens/name_builtin_tokens_{self.rank}.json', tokenized),
                 'TYPE': Tokenizer(output_folder + f'type_tokens/type_tokens_{self.rank}.json', tokenized),
                 'LITERAL': Tokenizer(output_folder + f'literal_tokens/literal_tokens_{self.rank}.json', tokenized)
             }
@@ -84,7 +84,7 @@ class AstParser:
             self.ast_file_handler = AstFileHandler(self.output_folder + 'asts/', use_compression, self.rank)
         else:
             self.tokenizers = {
-                'RES': Tokenizer(output_folder + 'reserved_tokens/reserved_tokens.json', tokenized),
+                'RES': Tokenizer(output_folder + 'reserved_tokens.json', tokenized),
                 'NAME': Tokenizer(output_folder + 'name_tokens.json', tokenized),
                 'NAME_BUILTIN': Tokenizer(output_folder + 'name_builtin_tokens.json', tokenized),
                 'TYPE': Tokenizer(output_folder + 'type_tokens.json', tokenized),
