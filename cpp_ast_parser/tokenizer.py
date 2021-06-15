@@ -56,12 +56,18 @@ class Tokenizer:
 
     
     # Loads tokenizer from file
-    def load(self, path):
+    def load_from_path(self, path):
         with open(path, 'r') as json_f:
             json_data = json_f.read()
 
         self.token_dict = json.loads(json_data)
 
+        # Reverse the token dict to create a label dict
+        self.label_dict = dict((reversed(item) for item in self.token_dict.items()))
+
+    # Loads tokenizer from dict
+    def load_from_dict(self, dictionary):
+        self.token_dict = dictionary
         # Reverse the token dict to create a label dict
         self.label_dict = dict((reversed(item) for item in self.token_dict.items()))
 

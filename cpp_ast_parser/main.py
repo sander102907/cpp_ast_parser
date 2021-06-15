@@ -123,8 +123,8 @@ def main():
     elif parse_method == 'code':
         input_folder = args.input_folder
         print('Input folder: ' + str(input_folder))
-        ast_to_code_parser = AstToCodeParser(input_folder, output_folder, csv_file_path, use_compression, processes_num, tokenized)
-        ast_to_code_parser.parse_asts_to_code()
+        ast_to_code_parser = AstToCodeParser(output_folder, csv_file_path, use_compression, processes_num, tokenized)
+        ast_to_code_parser.parse_asts_to_code(input_folder)
     elif parse_method == 'roundtrip':
         input_folder = args.input_folder
         split_terminals = args.split_terminals

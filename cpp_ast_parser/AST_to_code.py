@@ -14,34 +14,14 @@ from cpp_ast_parser.tokenizer import Tokenizer
 import gzip
 
 class AstToCodeParser:
-    def __init__(self, input_folder, output_folder, csv_file_path, use_compression, processes_num, tokenized):
+    def __init__(self, output_folder, csv_file_path='', use_compression=False, processes_num=1, tokenized=True):
          # CSV to get program data from
         self.csv_file_path = csv_file_path
 
         # Output folder to save data to
         self.output_folder = output_folder
 
-        # Input folder to get ASTs and tokens from
-        self.input_folder = input_folder
-
         self.tokenized = tokenized
-
-        if tokenized:
-            self.tokenizers = {}
-
-            for dirs, _, files in os.walk(input_folder):
-                for file in files:
-                    if 'tokens.json' in file:
-                        self.tokenizers[file.split('_')[0]] = Tokenizer(output_folder, self.tokenized)
-                        self.tokenizers[file.split('_')[0]].load(os.path.join(dirs, file))
-
-            # Create reserved label tokenizer
-            # self.res_tn = Tokenizer(output_folder, self.tokenized)
-            # self.res_tn.load(input_folder + 'RES_tokens.json')
-
-            # # Create non reserved label tokenizer
-            # self.tn = Tokenizer(output_folder, self.tokenized)
-            # self.tn.load(input_folder + 'tokens.json')
 
         # Create JSON importer
         self.importer = JsonImporter()
@@ -51,6 +31,27 @@ class AstToCodeParser:
 
         # Number of parallel processes
         self.processes_num = processes_num
+
+    
+    def load_vocabs_from_folder(self, folder):
+        if self.tokenized:
+            self.tokenizers = {}
+
+            for dirs, _, files in os.walk(folder):
+                for file in files:
+                    if 'tokens.json' in file:
+                        self.tokenizers[file.split('_')[0]] = Tokenizer(self.output_folder, self.tokenized)
+                        self.tokenizers[file.split('_')[0]].load_from_path(os.path.join(dirs, file))
+
+
+    def load_vocabs_from_dicts(self, token2index_dicts):
+        if self.tokenized:
+            self.tokenizers = {}
+
+            for vocab_type, token2index in token2index_dicts.items():
+                self.tokenizers[vocab_type] = Tokenizer(self.output_folder, self.tokenized)
+                self.tokenizers[vocab_type].load_from_dict(token2index)
+
 
 
     def get_label(self, node):
@@ -63,6 +64,8 @@ class AstToCodeParser:
                     return self.tokenizers['LITERAL'].get_label(node.token)      
                 elif 'TYPE' == parent_label:
                     return self.tokenizers['TYPE'].get_label(node.token)
+                elif 'REF_BUILTIN' == parent_label:
+                    return self.tokenizers['NAME_BUILTIN'].get_label(node.token)
                 else:
                     return self.tokenizers['NAME'].get_label(node.token)
         else:
@@ -683,7 +686,7 @@ class AstToCodeParser:
             file_queue.task_done()
 
 
-    def parse_asts_to_code(self):
+    def parse_asts_to_code(self, input_folder):
         file_paths = []
 
         # Read csv file in chunks (may be very large)
