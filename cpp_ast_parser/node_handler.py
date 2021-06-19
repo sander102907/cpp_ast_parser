@@ -194,6 +194,7 @@ class NodeHandler:
             if 'struct ' in ast_item.type.spelling:
                 return parent_node
             func_name = ast_item.referenced.spelling
+            decl_line = ast_item.referenced.location.line
         else:
             for child in ast_item.get_children():
                 if child.type.kind == TypeKind.OVERLOAD:
@@ -203,6 +204,8 @@ class NodeHandler:
 
             if not func_name:    
                 return parent_node
+
+            decl_line = None
 
 
         if not func_name:
@@ -257,7 +260,7 @@ class NodeHandler:
                 Node(self.tokenizers['NAME_BUILTIN'].get_token(func_name), is_reserved=False, parent=ref)
             else:
                 ref = Node(self.tokenizers['RES'].get_token('REF'), is_reserved=True, parent=func_call)
-                Node(self.tokenizers['NAME'].get_token(func_name), is_reserved=False, parent=ref) 
+                Node(self.tokenizers['NAME'].get_token(func_name), is_reserved=False, parent=ref, decl_line=decl_line) 
 
             if len(list(ast_item.get_arguments())) > 0 :
                 arg_node =  Node(self.tokenizers['RES'].get_token('ARGUMENTS'), is_reserved=True, parent=func_call)
@@ -277,35 +280,31 @@ class NodeHandler:
         else:
             parent_func_name = []
 
-        # if ast_item.spelling \
-        # and ast_item.spelling not in parent_func_name\
-        # and (self.tokenizers['RES'].get_label(parent_node.token) == 'DECLARATOR' and 'REF' in ast_item.kind.name):
-        #     print(ast_item.kind, ast_item.spelling, parent_node)
-
         if ast_item.spelling \
         and ast_item.spelling not in parent_func_name:
         # and not (self.tokenizers['RES'].get_label(parent_node.token) == 'DECLARATOR' and 'REF' in ast_item.kind.name):
             # print('AFTER: ', ast_item.spelling, ast_item.extent)
+
             if 'tmp' not in str(ast_item.referenced.location):
                 reference = Node(self.tokenizers['RES'].get_token('REF_BUILTIN'), True, parent=parent_node)
                 Node(self.tokenizers['NAME_BUILTIN'].get_token(ast_item.spelling), False, parent=reference)
             else:
                 reference = Node(self.tokenizers['RES'].get_token('REF'), True, parent=parent_node)
-                Node(self.tokenizers['NAME'].get_token(ast_item.spelling), False, parent=reference)
+                Node(self.tokenizers['NAME'].get_token(ast_item.spelling), False, parent=reference, decl_line=ast_item.referenced.location.line)
             return reference
 
         elif not ast_item.spelling and ast_item.kind == CursorKind.MEMBER_REF_EXPR:
             tokens = [t.spelling for t in ast_item.get_tokens()]
             member_ref = tokens[tokens.index('.') + 1]
             reference = Node(self.tokenizers['RES'].get_token('REF'), is_reserved=True, parent=parent_node)
-            Node(self.tokenizers['NAME'].get_token(member_ref), is_reserved=False, parent=reference)
+            Node(self.tokenizers['NAME'].get_token(member_ref), is_reserved=False, parent=reference, decl_line=ast_item.referenced.location.line)
             return reference
 
 
     def handle_type_ref(self, ast_item, parent_node):
         if not 'std' in ast_item.type.spelling:
             type_ref = Node(self.tokenizers['RES'].get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
-            Node(self.tokenizers['NAME'].get_token(ast_item.type.spelling), is_reserved=False, parent=type_ref)
+            Node(self.tokenizers['NAME'].get_token(ast_item.type.spelling), is_reserved=False, parent=type_ref, decl_line=ast_item.referenced.location.line)
 
     def handle_for_range(self, ast_item, parent_node):
         stmt = Node(self.tokenizers['RES'].get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
@@ -579,11 +578,16 @@ class NodeHandler:
     # e.g. "long long int" -> ["long", "long", "int"]
     # To greatly reduce the numbe of unique terminal tokens if the dataset is large
     def create_terminal_nodes(self, label, ast_item, parent_node, tokens=None):
+        if ast_item.referenced is not None:
+            decl_line = ast_item.referenced.location.line
+        else:
+            decl_line = ast_item.location.line
+
         if self.split_terminals:
             # Splilt label by: '[', ']', '<', '>', ' ', '::', ','
             split_label = [el for el in re.split('(\[|\]|<|>| |::|,)', label) if len(el.strip()) > 0]
 
             for label in split_label:
-                Node(self.tokenizers['NAME'].get_token(label), is_reserved=False, parent=parent_node)
+                Node(self.tokenizers['NAME'].get_token(label), is_reserved=False, parent=parent_node, decl_line=decl_line)
         else:
-            Node(self.tokenizers['NAME'].get_token(label), is_reserved=False, parent=parent_node)
+            Node(self.tokenizers['NAME'].get_token(label), is_reserved=False, parent=parent_node, decl_line=decl_line)
