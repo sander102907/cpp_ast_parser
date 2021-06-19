@@ -377,6 +377,7 @@ class AstParser:
             try:
                 # Parse the AST tree for the program
                 ast = self.parse_ast(code, imports, process_nr)
+                ast = self.remove_args_no_children(ast)
             except Exception as e:
                 print(f'Skipping file due to parsing failing: {program_id} - {e}')
                 # pbar.set_description(f'{datetime.now()}')
@@ -428,10 +429,14 @@ class AstParser:
             # Create file queue to store the program data
             file_queue = queue.Queue(len(programs_chunk))
 
+            x = 0
             # Fill the queue with files.
             for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
-                # if program[1]['solutionId'] == 107004724:
+                # if program[1]['solutionId'] == 43949335:
                     file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
+                    x += 1
+                    if x > 22:
+                        break
 
                     
             
