@@ -1,7 +1,7 @@
-import utils
+import cpp_ast_parser.utils as utils
 import clang.cindex
 from clang.cindex import CursorKind, AccessSpecifier, TypeKind, TokenKind
-from tree_node import Node
+from cpp_ast_parser.tree_node import Node
 import re
 
 class NodeHandler:
@@ -250,6 +250,9 @@ class NodeHandler:
             func_call = Node(self.tokenizers['RES'].get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
 
             if ast_item.referenced is not None and not "tmp" in str(ast_item.referenced.location):
+                if func_name == 'sync_with_stdio':
+                    func_name = 'ios::sync_with_stdio'
+
                 ref = Node(self.tokenizers['RES'].get_token('REF_BUILTIN'), is_reserved=True, parent=func_call)
                 Node(self.tokenizers['NAME_BUILTIN'].get_token(func_name), is_reserved=False, parent=ref)
             else:
@@ -268,15 +271,20 @@ class NodeHandler:
 
     def handle_reference(self, ast_item, parent_node):
         if parent_node:
-            parent_func_name = ['' if n.children[0].res else self.tokenizers['NAME'].get_label(n.children[0].token)
+            parent_func_name = ['' if n.children[0].res else self.tokenizers['NAME'].get_label(n.children[0].token.split('::')[-1])
                                 for n in parent_node.children
                                 if self.tokenizers['RES'].get_label(n.token) in ['NAME', 'REF', 'REF_BUILTIN'] and self.tokenizers['RES'].get_label(parent_node.token) == 'CALL_EXPR']
         else:
             parent_func_name = []
 
+        # if ast_item.spelling \
+        # and ast_item.spelling not in parent_func_name\
+        # and (self.tokenizers['RES'].get_label(parent_node.token) == 'DECLARATOR' and 'REF' in ast_item.kind.name):
+        #     print(ast_item.kind, ast_item.spelling, parent_node)
+
         if ast_item.spelling \
-        and ast_item.spelling not in parent_func_name \
-        and not (self.tokenizers['RES'].get_label(parent_node.token) == 'DECLARATOR' and 'REF' in ast_item.kind.name):
+        and ast_item.spelling not in parent_func_name:
+        # and not (self.tokenizers['RES'].get_label(parent_node.token) == 'DECLARATOR' and 'REF' in ast_item.kind.name):
             # print('AFTER: ', ast_item.spelling, ast_item.extent)
             if 'tmp' not in str(ast_item.referenced.location):
                 reference = Node(self.tokenizers['RES'].get_token('REF_BUILTIN'), True, parent=parent_node)
@@ -295,8 +303,9 @@ class NodeHandler:
 
 
     def handle_type_ref(self, ast_item, parent_node):
-        type_ref = Node(self.tokenizers['RES'].get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
-        Node(self.tokenizers['NAME'].get_token(ast_item.type.spelling), is_reserved=False, parent=type_ref)
+        if not 'std' in ast_item.type.spelling:
+            type_ref = Node(self.tokenizers['RES'].get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)
+            Node(self.tokenizers['NAME'].get_token(ast_item.type.spelling), is_reserved=False, parent=type_ref)
 
     def handle_for_range(self, ast_item, parent_node):
         stmt = Node(self.tokenizers['RES'].get_token(ast_item.kind.name), is_reserved=True, parent=parent_node)

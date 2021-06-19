@@ -3,7 +3,6 @@ from anytree import RenderTree
 from anytree.search import find
 from cpp_ast_parser.utils import assignment_operators, add_includes_usings
 import threading
-import multiprocessing
 import queue as queue
 import os
 from tqdm import tqdm
@@ -690,7 +689,7 @@ class AstToCodeParser:
         file_paths = []
 
         # Read csv file in chunks (may be very large)
-        asts = pd.read_csv(f'{self.input_folder}asts0.csv{".bz2" if self.use_compression else ""}', chunksize=1e5)
+        asts = pd.read_csv(f'{input_folder}asts0.csv{".bz2" if self.use_compression else ""}', chunksize=1e5)
 
         # Read metadata file with imports
         print('loading csv file with imports...')

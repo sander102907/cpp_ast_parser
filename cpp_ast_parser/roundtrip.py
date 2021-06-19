@@ -37,7 +37,7 @@ def roundtrip_mpi(ast_folder, code_folder, programs_csv_path, libclang_path, use
     }
 
     ast_parser = AstParser(libclang_path, programs_csv_path, ast_folder, use_compression, 1, split_terminals, tokenized, True)
-    ast_to_code_parser = AstToCodeParser(ast_folder, code_folder, programs_csv_path, use_compression, 1, tokenized)
+    ast_to_code_parser = AstToCodeParser(code_folder, programs_csv_path, use_compression, 1, tokenized)
     tester = Tester()
 
     # Read csv file in chunks (may be very large)
