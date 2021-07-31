@@ -77,22 +77,36 @@ class AstToCodeParser:
         operator = self.get_label(ast_item).split('_')[-1]
         code = ''
         if 'BINARY' in self.get_label(ast_item) or 'COMPOUND_ASSIGNMENT' in self.get_label(ast_item):
-            code += self.parse_node(ast_item.children[0])
+            if len(ast_item.children) > 0:
+                code += self.parse_node(ast_item.children[0])
+
             code += f' {operator} '
-            code += self.parse_node(ast_item.children[1])
+
+            if len(ast_item.children) > 1:
+                code += self.parse_node(ast_item.children[1])
+
         elif 'UNARY' in self.get_label(ast_item):
             if 'POST' in self.get_label(ast_item):
-                code += self.parse_node(ast_item.children[0])
+                if len(ast_item.children) > 0:
+                    code += self.parse_node(ast_item.children[0])
                 code += operator
             else:
                 code += operator + ' '
-                code += self.parse_node(ast_item.children[0])
+
+                if len(ast_item.children) > 0:
+                    code += self.parse_node(ast_item.children[0])
         elif 'CONDITIONAL_OPERATOR' == self.get_label(ast_item):
-            code += self.parse_node(ast_item.children[0])
+            if len(ast_item.children) > 0:
+                code += self.parse_node(ast_item.children[0])
             code += ' ? '
-            code += self.parse_node(ast_item.children[1])
+
+            if len(ast_item.children) > 1:
+                code += self.parse_node(ast_item.children[1])
+
             code += ':'
-            code += self.parse_node(ast_item.children[2])
+
+            if len(ast_item.children) > 2:
+                code += self.parse_node(ast_item.children[2])
         else:
             print(ast_item)
             pass
@@ -108,29 +122,41 @@ class AstToCodeParser:
         operator = operator_label.split('operator')[-1]
 
         if operator == '[]':
-            code += self.parse_node(ast_item.children[1].children[0])
-            code += f'[{self.parse_node(ast_item.children[1].children[1])}]'
+            if len(ast_item.children[1].children) > 0:
+                code += self.parse_node(ast_item.children[1].children[0])
+
+            if len(ast_item.children[1].children) > 1:
+                code += f'[{self.parse_node(ast_item.children[1].children[1])}]'
         elif operator == '()':
-            code += self.parse_node(ast_item.children[1].children[0])
+
+            if len(ast_item.children[1].children) > 0:
+                code += self.parse_node(ast_item.children[1].children[0])
             if len(ast_item.children[1].children) > 1:
                 code += f'({self.parse_node(ast_item.children[1].children[1])})'
             else:
                 code += '()'
-        elif operator == '*' or len(ast_item.children[1].children) < 2:
+        elif operator == '*' or (len(ast_item.children) > 1 and len(ast_item.children[1].children) < 2):
             code += operator
-            code += self.parse_node(ast_item.children[1].children[0])
+
+            if len(ast_item.children[1].children) > 0:
+                code += self.parse_node(ast_item.children[1].children[0])
         elif operator in ['++_PRE', '++_POST', '--_PRE', '--_POST']:
             if 'PRE' in operator:
                 code += operator.split('_')[0]
-                code += self.parse_node(ast_item.children[1].children[0])
+                if len(ast_item.children[1].children) > 0:
+                    code += self.parse_node(ast_item.children[1].children[0])
             else:
-                code += self.parse_node(ast_item.children[1].children[0])
+                if len(ast_item.children[1].children) > 0:
+                    code += self.parse_node(ast_item.children[1].children[0])
                 code += operator.split('_')[0]
         else:
             # first argument of operator
-            code += self.parse_node(ast_item.children[1].children[0])
+            if len(ast_item.children) > 1 and len(ast_item.children[1].children) > 0:
+                code += self.parse_node(ast_item.children[1].children[0])
             code += f' {operator} '
-            code += self.parse_node(ast_item.children[1].children[1])        
+
+            if len(ast_item.children) > 1 and len(ast_item.children[1].children) > 1:
+                code += self.parse_node(ast_item.children[1].children[1])        
 
         return code
 
@@ -152,7 +178,7 @@ class AstToCodeParser:
             #  and the type is the same as the type of the first child
             if self.get_label(child) == 'TYPE_KIND' and \
             not (self.get_label(ast_item.parent) == 'DECL_STMT' \
-                and ast_item != ast_item.parent.children[0]):
+                and ast_item != ast_item.parent.children[0]) and len(child.children) > 0:
                 var_type_size = self.get_type(child.children[0])
 
                 if type(var_type_size) is tuple:
@@ -204,7 +230,10 @@ class AstToCodeParser:
 
 
         elif self.get_label(ast_item) in ['TYPE', 'TYPE_REF']:
-            return self.get_label(ast_item.children[0])
+            if len(ast_item.children) > 0:
+                return self.get_label(ast_item.children[0])
+            else:
+                return ''
 
         elif self.get_label(ast_item) == 'TYPE_ARRAY':
             array_sizes = []
@@ -260,6 +289,7 @@ class AstToCodeParser:
         acc_spec = ''
         return_type = ''
         const = ''
+        func_name = ''
         for child in ast_item.children:
             if self.get_label(child) == 'TYPE_KIND':
                 return_type += self.get_type(child.children[0])
@@ -294,7 +324,12 @@ class AstToCodeParser:
                 if self.get_label(last_parm_decl).endswith('...'):
                     parameter_pack = True
 
-        return f'typename{"..." if parameter_pack else ""} {self.get_label(ast_item.children[0])}'
+        out = f'typename{"..." if parameter_pack else ""}'
+
+        if len(ast_item.children) > 0:
+            return out + f'{self.get_label(ast_item.children[0])}'
+        else:
+            return out
 
 
     def get_lambda_expr(self, ast_item):
@@ -356,7 +391,8 @@ class AstToCodeParser:
                 and self.get_label(node.children[1]) != 'CXX_THIS_EXPR': #node.parent.parent) == 'REF':
                 code += '.'
 
-            code += self.get_label(node.children[0])
+            if len(node.children) > 0:
+                code += self.get_label(node.children[0])
 
             # if self.get_label(node.parent) in ['REF', 'REF_BUILTIN']:
             #     code += '.'
@@ -380,9 +416,13 @@ class AstToCodeParser:
                     code += ')'
 
         elif self.get_label(node) == 'ARRAY_SUBSCRIPT_EXPR':
-            code += self.parse_node(node.children[0])
+            if len(node.children) > 0:
+                code += self.parse_node(node.children[0])
             code += '['
-            code += self.parse_node(node.children[1])
+
+            if len(node.children) > 1:
+                code += self.parse_node(node.children[1])
+                
             code += ']'
         elif self.get_label(node) == 'RETURN_STMT':
             code += 'return'
@@ -416,7 +456,7 @@ class AstToCodeParser:
             for i in range(for_stmt_expressions, len(node.children)):
                 code += self.parse_node(node.children[i])
         elif self.get_label(node) == 'CALL_EXPR':
-            if self.get_label(node.children[0].children[0]) in call_exp_operator_labels:
+            if len(node.children) > 0 and len(node.children[0].children) > 0 and self.get_label(node.children[0].children[0]) in call_exp_operator_labels:
                 code += self.get_call_exp_operator(node)
 
             else:
