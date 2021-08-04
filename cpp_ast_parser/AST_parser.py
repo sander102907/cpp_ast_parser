@@ -2,6 +2,7 @@ import os
 import clang.cindex
 from clang.cindex import CursorKind
 from cpp_ast_parser.tree_node import Node
+from cpp_ast_parser.preprocess_files import extract_imports
 import cpp_ast_parser.utils as utils
 from cpp_ast_parser.node_handler import NodeHandler
 from tqdm import tqdm
@@ -14,6 +15,7 @@ from cpp_ast_parser.AST_file_handler import AstFileHandler
 from datetime import datetime
 import math
 import ccsyspath
+import shutil
 
 
 
@@ -29,7 +31,7 @@ item from the language (so not a variable name for example)
 """
 
 class AstParser:
-    def __init__(self, clang_lib_file, csv_file_path, output_folder, use_compression, processes_num, split_terminals, tokenized, mpi):
+    def __init__(self, clang_lib_file, split_terminals=True):
         # Try to set a library file for clang
         try:
             clang.cindex.Config.set_library_file(clang_lib_file)
@@ -39,70 +41,61 @@ class AstParser:
         # Create index object to parse with
         self.index = clang.cindex.Index.create()
 
-        # CSV to get program data from
-        self.csv_file_path = csv_file_path
+        # # Number of parallel processes
+        # self.processes_num = processes_num
 
-        # Output folder to save data to
-        self.output_folder = output_folder
+        # # Boolean to indicate whether we are using MPI
+        # self.mpi = mpi
 
-        # # Create reserved label tokenizer
-        # self.res_tn = Tokenizer(output_folder + 'reserved_tokens.json', tokenized)
+        # if mpi:
+        #     from mpi4py import MPI
+        #     self.comm = MPI.COMM_WORLD
+        #     self.rank = self.comm.Get_rank()
+        #     self.size = self.comm.Get_size()
 
-        # # Create non reserved label tokenizer
-        # self.tn = Tokenizer(output_folder + 'tokens.json', tokenized)
+        #     self.tokenizers = {
+        #         'RES': Tokenizer(output_folder + f'reserved_tokens/reserved_tokens_{self.rank}.json', tokenized),
+        #         'NAME': Tokenizer(output_folder + f'name_tokens/name_tokens_{self.rank}.json', tokenized),
+        #         'NAME_BUILTIN': Tokenizer(output_folder + f'name_builtin_tokens/name_builtin_tokens_{self.rank}.json', tokenized),
+        #         'TYPE': Tokenizer(output_folder + f'type_tokens/type_tokens_{self.rank}.json', tokenized),
+        #         'LITERAL': Tokenizer(output_folder + f'literal_tokens/literal_tokens_{self.rank}.json', tokenized)
+        #     }
 
+        #     self.ast_file_handler = AstFileHandler(self.output_folder + 'asts/', use_compression, self.rank)
+        # else:
+        self.tokenizers = {
+            'RES': Tokenizer('reserved_tokens.json', False),
+            'NAME': Tokenizer('name_tokens.json', False),
+            'NAME_BUILTIN': Tokenizer('name_builtin_tokens.json', False),
+            'TYPE': Tokenizer('type_tokens.json', False),
+            'LITERAL': Tokenizer('literal_tokens.json', False)
+        }
 
-        # Create AST file handler object
-        self.ast_file_handler = AstFileHandler(self.output_folder + 'asts/', use_compression)
-
-        # Boolean whether or not to use compression to save AST files as .gz
-        self.use_compression = use_compression
-
-        # Number of parallel processes
-        self.processes_num = processes_num
-
-        # Boolean to indicate whether we are using MPI
-        self.mpi = mpi
-
-        if mpi:
-            from mpi4py import MPI
-            self.comm = MPI.COMM_WORLD
-            self.rank = self.comm.Get_rank()
-            self.size = self.comm.Get_size()
-
-            self.tokenizers = {
-                'RES': Tokenizer(output_folder + f'reserved_tokens/reserved_tokens_{self.rank}.json', tokenized),
-                'NAME': Tokenizer(output_folder + f'name_tokens/name_tokens_{self.rank}.json', tokenized),
-                'NAME_BUILTIN': Tokenizer(output_folder + f'name_builtin_tokens/name_builtin_tokens_{self.rank}.json', tokenized),
-                'TYPE': Tokenizer(output_folder + f'type_tokens/type_tokens_{self.rank}.json', tokenized),
-                'LITERAL': Tokenizer(output_folder + f'literal_tokens/literal_tokens_{self.rank}.json', tokenized)
-            }
-
-            self.ast_file_handler = AstFileHandler(self.output_folder + 'asts/', use_compression, self.rank)
-        else:
-            self.tokenizers = {
-                'RES': Tokenizer(output_folder + 'reserved_tokens.json', tokenized),
-                'NAME': Tokenizer(output_folder + 'name_tokens.json', tokenized),
-                'NAME_BUILTIN': Tokenizer(output_folder + 'name_builtin_tokens.json', tokenized),
-                'TYPE': Tokenizer(output_folder + 'type_tokens.json', tokenized),
-                'LITERAL': Tokenizer(output_folder + 'literal_tokens.json', tokenized)
-            }
-
-            self.ast_file_handler = AstFileHandler(self.output_folder, use_compression)
+        #     self.ast_file_handler = AstFileHandler(self.output_folder, use_compression)
 
 
         # Create node handler object
         self.nh = NodeHandler(self.tokenizers, split_terminals, self.index)
 
-    def parse_ast(self, program, imports, thread_nr):
+    def parse_ast(self, program: str,
+                        imports: list = None,
+                        thread_nr: int =0):
+                        
+        os.makedirs('temp', exist_ok=True)
+                        
         # Create temp file path for each trhead for clang to save in memory contents
-        temp_file_path = f'{self.output_folder}tmp{thread_nr}.cpp'
+        temp_file_path = os.path.join('temp', f'tmp{thread_nr}.cpp')
 
         # Set arguments and add compiler system include paths (with ccsyspath)
         args    = '-x c++ --std=c++20'.split()
         syspath = ccsyspath.system_include_paths('clang')
         incargs = [ b'-I' + inc for inc in syspath ]
         args    = args + incargs
+        
+        if imports is None:
+            program, imports = extract_imports(program)
+        else:
+            imports = [ele for ele in imports[1:-1].split("'") if ele != '' and ele != ', ']
 
         # Preprocess the program, expand the macros
         preprocessed_program = self.preprocess_program(program, temp_file_path, imports)
@@ -129,6 +122,8 @@ class AstParser:
         # Parse each cursor item
         for cursor_item in cursor_items:
             self.parse_item(cursor_item, root_node, program)
+            
+        shutil.rmtree('temp')
 
 
         # Return the root node filled with children to form the AST
@@ -164,10 +159,7 @@ class AstParser:
         preprocessed_program = subprocess.check_output(['g++', '-x', 'c++', '-E', temp_file_path]).decode()
 
         # Only retrieve the actual original code from the program not all the includes
-        program_lines = preprocessed_program.split('\n')
-
-        # First get the saved imports (includes)
-        imports = [ele for ele in imports[1:-1].split("'") if ele != '' and ele != ', ']
+        program_lines = preprocessed_program.split('\n')       
 
         # Add imports to the first lines of the new filtered program
         preprocessed_program_filtered = '\n'.join([imp for imp in imports if imp.startswith('#')])
@@ -346,6 +338,11 @@ class AstParser:
         return node
 
 
+    def string_to_ast(self, program: str):
+        return self.parse_ast(program)
+
+
+
     def thread_parser(self, file_queue, pbar, thread_nr):
         while not file_queue.empty():
             # Get a program from the queue
@@ -371,30 +368,23 @@ class AstParser:
             file_queue.task_done()
 
 
-    def mpi_parser(self, files, process_nr):
-        for file in tqdm(files, postfix=f'process: {process_nr}'):
-            program_id, code, imports = file
-            try:
-                # Parse the AST tree for the program
-                ast = self.parse_ast(code, imports, process_nr)
-                ast = self.remove_args_no_children(ast)
-            except Exception as e:
-                print(f'Skipping file due to parsing failing: {program_id} - {e}')
-                # pbar.set_description(f'{datetime.now()}')
-                # pbar.update()
-                # file_queue.task_done()
-                continue
+    # def mpi_parser(self, files, process_nr):
+    #     for file in tqdm(files, postfix=f'process: {process_nr}'):
+    #         program_id, code, imports = file
+    #         try:
+    #             # Parse the AST tree for the program
+    #             ast = self.parse_ast(code, imports, process_nr)
+    #             ast = self.remove_args_no_children(ast)
+    #         except Exception as e:
+    #             print(f'Skipping file due to parsing failing: {program_id} - {e}')
+    #             # pbar.set_description(f'{datetime.now()}')
+    #             # pbar.update()
+    #             # file_queue.task_done()
+    #             continue
 
-            # Write the AST tree to file
-            self.ast_file_handler.add_ast(ast, program_id)
+    #         # Write the AST tree to file
+    #         self.ast_file_handler.add_ast(ast, program_id)
 
-
-    def clear_temp_files(self):
-        if self.mpi:
-            os.remove(f'{self.output_folder}tmp{self.rank}.cpp')
-        else:
-            for i in range(self.processes_num):
-                os.remove(f'{self.output_folder}tmp{i}.cpp')
 
 
     def __cleanup(self):
@@ -413,98 +403,105 @@ class AstParser:
             pass
 
 
-    def parse_csv(self):
-        print('Parsing programs ...')
+    # def parse_csv(self, csv_file_path, output_folder, use_compression):
+    #     print('Parsing programs ...')
 
-        # Create output directory if it does not exist yet
-        os.makedirs(self.output_folder, exist_ok=True)
+    #     # Create AST file handler object
+    #     self.ast_file_handler = AstFileHandler(output_folder + 'asts/', use_compression)
 
-        # Read csv file in chunks (may be very large)
-        programs = pd.read_csv(self.csv_file_path, chunksize=1e5)
 
-        # iterate over the chunks
-        for i, programs_chunk in enumerate(programs):
-            # Create progressbar
-            pbar = tqdm(total=len(programs_chunk), unit=' program', postfix=f'chunk {i}', colour='green', disable=False)
-            # Create file queue to store the program data
-            file_queue = queue.Queue(len(programs_chunk))
+    #     # Create output directory if it does not exist yet
+    #     os.makedirs(self.output_folder, exist_ok=True)
 
-            x = 0
-            # Fill the queue with files.
-            for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
-                # if program[1]['solutionId'] == 43949335:
-                    file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
-                    x += 1
-                    if x > 22:
-                        break
+    #     # Read csv file in chunks (may be very large)
+    #     programs = pd.read_csv(csv_file_path, chunksize=1e5)
+
+    #     # iterate over the chunks
+    #     for i, programs_chunk in enumerate(programs):
+    #         # Create progressbar
+    #         pbar = tqdm(total=len(programs_chunk), unit=' program', postfix=f'chunk {i}', colour='green', disable=False)
+    #         # Create file queue to store the program data
+    #         file_queue = queue.Queue(len(programs_chunk))
+
+    #         x = 0
+    #         # Fill the queue with files.
+    #         for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
+    #             # if program[1]['solutionId'] == 43949335:
+    #                 file_queue.put((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
+    #                 x += 1
+    #                 if x > 22:
+    #                     break
 
                     
             
 
-            try:
-                threads = []
-                # Create threads which parse ASTs
-                for thread_nr in range(self.processes_num):
-                    t = threading.Thread(target=self.thread_parser,
-                                        args=(file_queue, pbar, thread_nr))
-                    t.daemon = True
-                    t.start()
-                    threads.append(t)
+    #         try:
+    #             threads = []
+    #             # Create threads which parse ASTs
+    #             for thread_nr in range(self.processes_num):
+    #                 t = threading.Thread(target=self.thread_parser,
+    #                                     args=(file_queue, pbar, thread_nr))
+    #                 t.daemon = True
+    #                 t.start()
+    #                 threads.append(t)
 
-                # Wait for all threads to be done.
-                file_queue.join()    
-                for thread in threads:
-                    thread.join()              
-                self.ast_file_handler.save()
+    #             # Wait for all threads to be done.
+    #             file_queue.join()    
+    #             for thread in threads:
+    #                 thread.join()              
+    #             self.ast_file_handler.save()
                                 
 
-            # Exit program with keyboard interrupt
-            except KeyboardInterrupt:
-                self.__cleanup()
-                os.kill(0, 9)
+    #         # Exit program with keyboard interrupt
+    #         except KeyboardInterrupt:
+    #             self.__cleanup()
+    #             os.kill(0, 9)
 
 
-        self.__cleanup()
+    #     self.__cleanup()
 
 
-    def parse_mpi(self):
-        print('Parsing programs ...')
+    # def parse_mpi(self, csv_file_path, output_folder, use_compression):
+    #     print('Parsing programs ...')
 
-        # Create output directory if it does not exist yet
-        os.makedirs(self.output_folder, exist_ok=True)
-        os.makedirs(self.output_folder + 'asts/', exist_ok=True)
-        os.makedirs(self.output_folder + 'reserved_tokens/', exist_ok=True)
-        os.makedirs(self.output_folder + 'name_tokens/', exist_ok=True)
-        os.makedirs(self.output_folder + 'type_tokens/', exist_ok=True)
-        os.makedirs(self.output_folder + 'literal_tokens/', exist_ok=True)
+    #     # Create AST file handler object
+    #     self.ast_file_handler = AstFileHandler(output_folder + 'asts/', use_compression)
 
-        # Read csv file in chunks (may be very large)
-        programs = pd.read_csv(self.csv_file_path, chunksize=1e5)
+    #     # Create output directory if it does not exist yet
+    #     os.makedirs(self.output_folder, exist_ok=True)
+    #     os.makedirs(self.output_folder + 'asts/', exist_ok=True)
+    #     os.makedirs(self.output_folder + 'reserved_tokens/', exist_ok=True)
+    #     os.makedirs(self.output_folder + 'name_tokens/', exist_ok=True)
+    #     os.makedirs(self.output_folder + 'type_tokens/', exist_ok=True)
+    #     os.makedirs(self.output_folder + 'literal_tokens/', exist_ok=True)
 
-        def get_files():
-            files = []
+    #     # Read csv file in chunks (may be very large)
+    #     programs = pd.read_csv(csv_file_path, chunksize=1e5)
 
-            # Fill the queue with files.
-            for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
-                # if program[1]['solutionId'] == 104465269:
-                    files.append((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
+    #     def get_files():
+    #         files = []
 
-            return files
+    #         # Fill the queue with files.
+    #         for program in list(programs_chunk[['solutionId', 'solution', 'imports']].iterrows()):
+    #             # if program[1]['solutionId'] == 104465269:
+    #                 files.append((program[1]['solutionId'], program[1]['solution'], program[1]['imports']))
 
-        # iterate over the chunks
-        for programs_chunk in programs:
-            if self.rank == 0:
-                files = get_files()
-                batch_size = len(files)/self.size
-                for i in range(1, self.size):
-                    data = files[math.ceil(batch_size * i): math.ceil(batch_size * (i + 1))]
-                    self.comm.send(data, dest=i)
-                files = files[:math.ceil(batch_size)]
-            else:
-                files = self.comm.recv(source=0)
+    #         return files
 
-            self.mpi_parser(files, self.rank)
-            self.__cleanup()
+    #     # iterate over the chunks
+    #     for programs_chunk in programs:
+    #         if self.rank == 0:
+    #             files = get_files()
+    #             batch_size = len(files)/self.size
+    #             for i in range(1, self.size):
+    #                 data = files[math.ceil(batch_size * i): math.ceil(batch_size * (i + 1))]
+    #                 self.comm.send(data, dest=i)
+    #             files = files[:math.ceil(batch_size)]
+    #         else:
+    #             files = self.comm.recv(source=0)
+
+    #         self.mpi_parser(files, self.rank)
+    #         self.__cleanup()
         
 
         

@@ -36,7 +36,7 @@ def roundtrip_mpi(ast_folder, code_folder, programs_csv_path, libclang_path, use
         'LITERAL': Tokenizer(ast_folder + f'literal_tokens/literal_tokens_{rank}.json', tokenized)
     }
 
-    ast_parser = AstParser(libclang_path, programs_csv_path, ast_folder, use_compression, 1, split_terminals, tokenized, True)
+    ast_parser = AstParser(libclang_path, 1, split_terminals, tokenized, True)
     ast_to_code_parser = AstToCodeParser(code_folder, programs_csv_path, use_compression, 1, tokenized)
     tester = Tester()
 
@@ -106,6 +106,8 @@ def roundtrip_mpi(ast_folder, code_folder, programs_csv_path, libclang_path, use
             tokenizer.save()
 
         ast_parser.ast_file_handler.save()
-        ast_parser.clear_temp_files()
+        os.remove(f'{ast_folder}tmp{rank}.cpp')
+        # ast_parser.clear_temp_files()
+        
 
     

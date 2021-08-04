@@ -19,8 +19,7 @@ def preprocess_csv(input_file, output_file):
         header = False
 
 
-def preprocess_solution(row):
-    solution = row['solution']
+def extract_imports(solution):
     includes_usings = []
     include_regex = re.compile(r'^#*.include')
     using_regex = re.compile(r'^using')
