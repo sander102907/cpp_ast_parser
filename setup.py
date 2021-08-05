@@ -16,6 +16,7 @@ setup(name='CPP AST Parser',
           'numpy',
           'pandas',
           'tqdm',
+          'ccsyspath',
       ],
       long_description=open('README.md').read(),
       license='APACHE 2.0'
