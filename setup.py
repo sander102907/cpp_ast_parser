@@ -11,8 +11,6 @@ setup(name='CPP AST Parser',
       install_requires=[
           'anytree',
           'clang',
-          'llvmlite',
-          'numba',
           'numpy',
           'pandas',
           'tqdm',
