@@ -1,7 +1,5 @@
 anytree==2.8.0
 clang==11.0
-llvmlite
-numba
 numpy
 pandas
 pexpect==4.8.0
